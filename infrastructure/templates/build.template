@@ -1,5 +1,6 @@
-# Use "./man" to get a manual describing this file.
-# Or browse infrastructure/docs/html/swirlbuild.5.html
+# After installing swirls/swirlbuild-docs, you can:
+# See the manpage for swirlbuild(5) that describes this file.
+# Or browse file:///usr/share/doc/swirlbuild-docs/html/swirlbuild.5.html
 
 DESCRIPTION="
 CupofCoffee brings cafeine
