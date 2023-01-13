@@ -38,12 +38,8 @@ readonly buildswirl_is_at="$(realpath "$(dirname "${0}")")"
 readonly buildfile="${1}/build"
 readonly swirldir="$( dirname "$( realpath "${buildfile}" )" )"
 
-cd "${buildswirl_is_at}" || _xfailedbye "cd failed"
+cd "${buildswirl_is_at}" || exit 1
 . "${buildfile}"
-
-readonly distdir="${buildswirl_is_at}/distfiles/${PKGNAME}-${VERSION}"
-mkdir -p "${distdir}" || _xfailedbye "Unable to store distfiles"
-
 
 #############################################################################
 #           Everything below this line is NOT seen by buildfiles            #
@@ -249,6 +245,9 @@ _applypatches() {
 		fi
 	done
 }
+
+readonly distdir="${buildswirl_is_at}/distfiles/${PKGNAME}-${VERSION}"
+mkdir -p "${distdir}" || { echo "FATAL: Unable to store distfiles!"; exit 1; }
 
 if test ! -d "${1}"; then
 	echo "Usage: buildswirl <directory> [checksum]"
