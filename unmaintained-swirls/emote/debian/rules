@@ -1,0 +1,11 @@
+#! /usr/bin/make -f
+
+export PYBUILD_NAME = Emote
+
+%:
+	dh $@ --with python3 --buildsystem=pybuild
+
+# Don't run tests, RUN_DEPENDS are not available in the chroot
+# As they're calculated when the package is built
+override_dh_auto_test:
+	:

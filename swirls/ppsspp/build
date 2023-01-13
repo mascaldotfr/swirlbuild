@@ -1,0 +1,41 @@
+DESCRIPTION="Sony PlayStation Portable emulator (unvendored)
+ Note that the binary is called \"PPSSPPSDL\" (all uppercase)
+
+ This does not use the vendored ffmpeg. Many cinematics will not load,
+ you will have to skip them.
+"
+
+HOMEPAGE="https://www.ppsspp.org/"
+
+PKGNAME=ppsspp
+VERSION=1.14.4
+REVISION=5
+
+LICENSE="LICENSE.TXT"
+SOURCE="https://github.com/hrydgard/${PKGNAME}/releases/download/v${VERSION}/${PKGNAME}-${VERSION}.tar.xz"
+
+BUILD_DEPENDS="
+	python3
+	libgl1-mesa-dev
+	libsdl2-dev
+	libvulkan-dev
+	libsnappy-dev
+	libglew-dev
+	libavcodec-dev
+	libavformat-dev
+	libavutil-dev
+	libswresample-dev
+	libswscale-dev
+	libzstd-dev
+	libzip-dev
+	libpng-dev
+	libminiupnpc-dev
+"
+
+RUN_DEPENDS="
+	libavformat59
+	libavutil57
+	libswresample4
+	libswscale6
+	libzstd1
+"

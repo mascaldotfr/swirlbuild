@@ -1,0 +1,2 @@
+echo "updatelocalrepo hook"
+apt update

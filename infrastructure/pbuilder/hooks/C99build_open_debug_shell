@@ -1,0 +1,14 @@
+#!/bin/sh
+
+apt install -y vim-tiny
+cd /tmp/buildd/
+# XXX  pretty bad
+cd $(find . -maxdepth 1 -mindepth 1 -type d)
+
+echo
+echo "OOPS! Build failed!"
+echo
+echo "Launched a debug shell inside the build chroot."
+echo "When you quit the shell, that chroot will be destroyed."
+
+/bin/bash < /dev/tty > /dev/tty 2> /dev/tty

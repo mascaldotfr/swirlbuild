@@ -1,0 +1,54 @@
+ /* default mandoc.css css */
+table.head, table.foot { width: 100%; }
+td.head-rtitle, td.foot-os { text-align: right; }
+td.head-vol { text-align: center; }
+.Nd, .Bf, .Op { display: inline; }
+.Pa, .Ad { font-style: italic; }
+.Ms { font-weight: bold; }
+.Bl-diag > dt { font-weight: bold; }
+code.Nm, .Fl, .Cm, .Ic, code.In, .Fd, .Fn, .Cd { font-weight: bold;
+font-family: inherit; }
+/* custom stuff */
+html {
+	background-color: #020a18;
+	--bg: #071c2f;
+	--fg: #fdf6e3;
+	--pre: #000000;
+	--a: #b1e2ff;
+	--width: 900px;
+}
+@media (prefers-color-scheme: light) {
+	html {
+		background-color: #244982;
+		--bg: #fff5e3;
+		--fg: #292d08;
+		--pre: #ffffff;
+		--a: #720000;
+	}
+}
+
+body {
+	max-width: var(--width);
+	margin: 1em auto;
+	background-color: var(--bg);
+	color: var(--fg);
+	padding: 1em;
+	font-family: sans-serif;
+}
+a {
+	color: var(--a);
+}
+h1 {
+	font-size: 150%;
+}
+h2 {
+	font-size: 125%;
+}
+pre {
+	overflow: auto;
+	background-color: var(--pre);
+	padding: .5em;
+}
+
+
+

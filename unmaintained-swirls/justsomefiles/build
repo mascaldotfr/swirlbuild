@@ -1,0 +1,16 @@
+DESCRIPTION="just packaging some files that can be found in /usr/share/justsomefiles"
+HOMEPAGE="localhost"
+
+PKGNAME=justsomefiles
+VERSION=1.0.0
+REVISION=0
+
+LICENSE="LICENSE"
+
+download() {
+  	target_dir="${tmpdir}/${PKGNAME}-${VERSION}"
+ 	mkdir -p "${target_dir}"
+	cp /proc/cpuinfo /etc/motd "${target_dir}"
+	echo "For demonstration use only. Do not distribute." > "${target_dir}"/LICENSE
+}
+

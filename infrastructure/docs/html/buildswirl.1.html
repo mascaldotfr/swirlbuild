@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="style.css" type="text/css" media="all"/>
+  <title>buildswirl(1)</title>
+</head>
+<body>
+<table class="head">
+  <tr>
+    <td class="head-ltitle">buildswirl(1)</td>
+    <td class="head-vol">General Commands Manual</td>
+    <td class="head-rtitle">buildswirl(1)</td>
+  </tr>
+</table>
+<div class="manual-text">
+<section class="Sh">
+<h1 class="Sh" id="NAME"><a class="permalink" href="#NAME">NAME</a></h1>
+<p class="Pp"><code class="Nm">buildswirl</code> &#x2014; <span class="Nd">build
+    a swirl package</span></p>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="SYNOPSIS"><a class="permalink" href="#SYNOPSIS">SYNOPSIS</a></h1>
+<table class="Nm">
+  <tr>
+    <td><code class="Nm">./buildswirl</code></td>
+    <td><span class="Pa">swirls/&lt;swirlname&gt;</span> [checksum]</td>
+  </tr>
+</table>
+<br/>
+<table class="Nm">
+  <tr>
+    <td><code class="Nm">cd swirls/&lt;swirlname&gt; &amp;&amp; ../../buildswirl
+      $PWD</code></td>
+    <td>[checksum]</td>
+  </tr>
+</table>
+</section>
+<h1 class="Sh">TABLE OF CONTENTS</h1>
+<ul class="Bl-compact">
+  <li><a href="#DESCRIPTION">DESCRIPTION</a></li>
+  <li><a href="#OPTIONS">OPTIONS</a></li>
+  <li><a href="#MANUALLY_UPDATING_THE_REPOSITORY,_MOVED/DELETED_REPOSITORY">MANUALLY
+      UPDATING THE REPOSITORY, MOVED/DELETED REPOSITORY</a></li>
+  <li><a href="#MAINTENANCE">MAINTENANCE</a>
+    <ul class="Bl-compact">
+      <li><a href="#pbuilder">pbuilder</a></li>
+      <li><a href="#distfiles,_logs_and_repository">distfiles, logs and
+          repository</a></li>
+    </ul>
+  </li>
+  <li><a href="#FILES">FILES</a></li>
+  <li><a href="#EXIT_STATUS">EXIT STATUS</a></li>
+  <li><a href="#ENVIRONMENT">ENVIRONMENT</a></li>
+  <li><a href="#SEE_ALSO">SEE ALSO</a></li>
+  <li><a href="#SECURITY_CONSIDERATIONS">SECURITY CONSIDERATIONS</a></li>
+  <li><a href="#CAVEATS">CAVEATS</a></li>
+</ul>
+<section class="Sh">
+<h1 class="Sh" id="DESCRIPTION"><a class="permalink" href="#DESCRIPTION">DESCRIPTION</a></h1>
+<p class="Pp">This manual assumes you have followed the &quot;QuickStart&quot;
+    instructions at
+  <a class="Xr" href="swirlbuild.7.html">swirlbuild(7)</a>.</p>
+<p class="Pp">The <code class="Nm">buildswirl</code> utility builds a Debian
+    package for a given <var class="Ar">swirlname</var>, in your
+    <span class="Pa">$SWIRLBUILD/repository</span> directory, and then updates
+    the necessary files to make that directory a basic Debian repository.</p>
+<p class="Pp">When applicable, <code class="Nm">buildswirl</code> will build
+    dbgsym (debug symbols) packages, and will make them available in the
+    repository.</p>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="OPTIONS"><a class="permalink" href="#OPTIONS">OPTIONS</a></h1>
+<dl class="Bl-tag">
+  <dt id="checksum"><var class="Va">checksum</var></dt>
+  <dd>
+    <p class="Pp">If it is appended to the command line,
+        <code class="Nm">buildswirl</code> will download all the source files
+        necessary to build the swirl, compute their checksums, and then create a
+        <span class="Pa">$SWIRLBUILD/&lt;swirlname&gt;/sha512sum</span> file
+        with them, provided that it does not exist.</p>
+    <p class="Pp">If
+        <span class="Pa">$SWIRLBUILD/&lt;swirlname&gt;/sha512sum</span> exists,
+        it will quit immediatly.</p>
+    <p class="Pp">This option should not be used if you do not intend to create
+        or maintain a swirl.</p>
+  </dd>
+</dl>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="MANUALLY_UPDATING_THE_REPOSITORY,_MOVED/DELETED_REPOSITORY"><a class="permalink" href="#MANUALLY_UPDATING_THE_REPOSITORY,_MOVED/DELETED_REPOSITORY">MANUALLY
+  UPDATING THE REPOSITORY, MOVED/DELETED REPOSITORY</a></h1>
+<p class="Pp">If you removed a package from the repository, the
+    <span class="Pa">Packages</span> and/or the <span class="Pa">Release</span>
+    files, the repository itself or added a third party deb package, you must
+    update the metadata, otherwise <a class="Xr" href="apt.8.html">apt(8)</a>
+    will error out.</p>
+<p class="Pp">To do so, you can issue:</p>
+<div class="Bd Pp Li">
+<pre>$SWIRLBUILD/infrastructure/bin/repoupdate $SWIRLBUILD/repository</pre>
+</div>
+<p class="Pp">The same applies if you moved the $SWIRLBUILD tree or the
+    $SWIRLBUILD/repository directory.</p>
+<p class="Pp">In case your intention is to not use swirlbuild and its repository
+    anymore, you just need to remove the
+    <span class="Pa">/etc/apt/sources.list.d/swirlpkg.list</span> file as root
+    to unlock the situation.</p>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="MAINTENANCE"><a class="permalink" href="#MAINTENANCE">MAINTENANCE</a></h1>
+<section class="Ss">
+<h2 class="Ss" id="pbuilder"><a class="permalink" href="#pbuilder">pbuilder</a></h2>
+<p class="Pp"><a class="Xr" href="pbuilder.8.html">pbuilder(8)</a> has its own
+    <a class="Xr" href="apt.8.html">apt(8)</a> cache and packages store, that
+    can be cleaned by using:</p>
+<div class="Bd Pp Li">
+<pre>sudo pbuilder clean
+sudo rm /var/cache/pbuilder/result/*</pre>
+</div>
+</section>
+<section class="Ss">
+<h2 class="Ss" id="distfiles,_logs_and_repository"><a class="permalink" href="#distfiles,_logs_and_repository">distfiles,
+  logs and repository</a></h2>
+<dl class="Bl-tag">
+  <dt><span class="Pa">$SWIRLBUILD/distfiles</span></dt>
+  <dd>
+    <p class="Pp">contains the downloaded sources of the swirl you have built.
+        It can safely be removed, but at the next build sources will be
+        downloaded again.</p>
+  </dd>
+  <dt><span class="Pa">$SWIRLBUILD/logs</span></dt>
+  <dd>
+    <p class="Pp">contains the logs generated during swirl builds. This can be
+        safely removed.</p>
+  </dd>
+  <dt><span class="Pa">$SWIRLBUILD/repository</span></dt>
+  <dd>
+    <p class="Pp">Your local repository directory.
+        <code class="Nm">buildswirl</code> does not remove old packages, and
+        there are no official way to do so, but $WEBSEARCHENGINE has some
+        proposals. The <span class="Pa">Release</span> and
+        <span class="Pa">Packages</span> files should never be removed.</p>
+    <p class="Pp">After you are done, you must proceed as described in
+        <a class="Sx" href="#MANUALLY_UPDATING_THE_REPOSITORY,_MOVED/DELETED_REPOSITORY">MANUALLY
+        UPDATING THE REPOSITORY, MOVED/DELETED REPOSITORY</a></p>
+  </dd>
+</dl>
+</section>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="FILES"><a class="permalink" href="#FILES">FILES</a></h1>
+<dl class="Bl-tag">
+  <dt><span class="Pa">$SWIRLBUILD/myswirls</span></dt>
+  <dd>
+    <p class="Pp">Files included in this directory are not tracked by
+        <a class="Xr" href="git.1.html">git(1)</a>. If you want to put personal
+        swirls inside your copy of the <code class="Nm">buildswirl</code>
+        repository, you can put them there.</p>
+  </dd>
+</dl>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="EXIT_STATUS"><a class="permalink" href="#EXIT_STATUS">EXIT
+  STATUS</a></h1>
+<p class="Pp">The <code class="Nm">buildswirl</code> utility exits&#x00A0;0 on
+    success, and&#x00A0;&gt;0 if an error occurs.</p>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="ENVIRONMENT"><a class="permalink" href="#ENVIRONMENT">ENVIRONMENT</a></h1>
+<dl class="Bl-tag">
+  <dt id="MAKE_JOBS"><a class="permalink" href="#MAKE_JOBS"><code class="Ev">MAKE_JOBS</code></a></dt>
+  <dd>
+    <p class="Pp">This variable can be used if it is not specified in the
+        buildfile, and will define the numbers of parallel jobs during various
+        steps of the build. This may be useful if you are out of memory during a
+        build. It may be overriden by a swirl if we have found out that a single
+        job takes 4GB of memory or more, with a value of 1, which is rarely the
+        case.</p>
+  </dd>
+</dl>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="SEE_ALSO"><a class="permalink" href="#SEE_ALSO">SEE
+  ALSO</a></h1>
+<p class="Pp">If it is the first time you are using
+    <code class="Nm">buildswirl</code>, it is recommended to read its intro at
+    <a class="Xr" href="swirlbuild.7.html">swirlbuild(7)</a>.</p>
+<p class="Pp">The packager reference is available at
+    <a class="Xr" href="swirlbuild.5.html">swirlbuild(5)</a>.</p>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="SECURITY_CONSIDERATIONS"><a class="permalink" href="#SECURITY_CONSIDERATIONS">SECURITY
+  CONSIDERATIONS</a></h1>
+<p class="Pp">A swirl is mostly composed of files that will be executed on your
+    computer. Among others, <span class="Pa">debian/rules</span> and
+    <span class="Pa">build</span> are executed. Be careful to always download a
+    swirl from a trusted source, or review the swirl to ensure no malicious code
+    is executed.</p>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="CAVEATS"><a class="permalink" href="#CAVEATS">CAVEATS</a></h1>
+<p class="Pp">Using the <span class="Pa">swirls/</span> directory is a
+    convention, actually <code class="Nm">buildswirl</code> should be able to
+    work with any directory provided.</p>
+</section>
+</div>
+<table class="foot">
+  <tr>
+    <td class="foot-date">January 13, 2023</td>
+    <td class="foot-os">Debian sid</td>
+  </tr>
+</table>
+</body>
+</html>

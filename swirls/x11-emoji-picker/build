@@ -1,0 +1,18 @@
+DESCRIPTION="emoji picker for X11 based on the Qt library"
+HOMEPAGE="https://github.com/GaZaTu/x11-emoji-picker"
+
+PKGNAME=x11-emoji-picker
+VERSION=0.11.0
+REVISION=0
+
+LICENSE="LICENSE"
+SOURCE="${HOMEPAGE}/archive/refs/tags/v${VERSION}.tar.gz"
+
+# Use 4GB of RAM by build thread
+MAKE_JOBS=1
+
+BUILD_DEPENDS="
+	qtbase5-dev
+	libicu-dev
+	libxdo-dev
+"

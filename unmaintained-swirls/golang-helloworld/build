@@ -1,0 +1,25 @@
+DESCRIPTION="simple hello world in go
+ A gorilla/mux demo.
+ .
+ Run 'golang-helloworld' and point your browser to
+ http://127.0.0.1:9100 to see the hello world message.
+"
+
+HOMEPAGE="https://github.com/hackersandslackers/golang-helloworld"
+
+PKGNAME=golang-helloworld
+GO_IMPORT_PATH="github.com/hackersandslackers/golang-helloworld"
+commit=2c9cd6f13e658495529558e64e91cde77d9d9f4d
+VERSION=20230107.0
+REVISION=1
+
+# go packaging guide: https://go-team.pages.debian.net/packaging.html
+LICENSE="LICENSE"
+SOURCE="${HOMEPAGE}/archive/${commit}.tar.gz"
+OVERRIDE_SRCDIR="${PKGNAME}-${commit}"
+
+BUILD_DEPENDS="
+	golang-any
+	dh-sequence-golang
+	golang-github-gorilla-mux-dev
+"

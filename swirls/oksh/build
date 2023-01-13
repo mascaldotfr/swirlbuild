@@ -1,0 +1,10 @@
+DESCRIPTION="OpenBSD's version of ksh"
+HOMEPAGE="https://github.com/ibara/oksh/"
+
+PKGNAME=oksh
+VERSION=7.2
+REVISION=7
+
+LICENSE="LEGAL"
+SOURCE="${HOMEPAGE}/archive/refs/tags/${PKGNAME}-${VERSION}.tar.gz"
+OVERRIDE_SRCDIR="${PKGNAME}-${PKGNAME}-${VERSION}"

@@ -1,0 +1,830 @@
+.de Builder
+.	Xr buildswirl\fR 1 \\$*
+..
+.Dd $Mdocdate$
+.Dt swirlbuild 5
+.Os Debian sid
+.Sh NAME
+.Nm swirlbuild
+.Nd the swirlbuild packager manual
+.Sh DESCRIPTION
+.Pp
+This manual includes all informations to create and maintain a swirl, as well
+as details about
+.Nm .
+It tries to be exhaustive, but cannot replace practice and analysis of already
+existing swirls.
+.Pp
+Looking at
+.Pa swirls/oksh
+is a good point to get started.
+.Sx USUAL WORKFLOW
+describes a typical workflow when creating a swirl, with a real-life example.
+.Pp
+If you want to build a swirl as a simple user, please read
+.Builder .
+.
+.Pp
+The general idea of
+.Nm
+is to give you a lot of freedom to turn around its limitations. It will not stop
+you from doing stupid things, not many checks are done.
+.
+.Pp
+.Va $SWIRLBUILD
+is used in this documentation to represent the root directory of
+.Nm ,
+where the
+.Builder
+script can be found.
+.
+.
+.Sh BUILDFILES
+.Pp
+Buildfiles, known as
+.Pa swirls/<swirlname>/build
+are simple shell scripts sourced by
+.Nm .
+As such, standard shell conventions apply when it comes to quoting, and
+all our usual shell utilities can be used inside of it.
+.Xr dash 1
+as
+.Pa /bin/sh
+is implied. Note that using utilities out of the Debian base utilities and
+packages pulled during the deployment of
+.Nm
+should be avoided,
+and otherwise safeguards should be added to tell the user to install said utilities.
+.
+.Pp
+It's recommended to use the same ordering used in
+.Pa $SWIRLBUILD/build.template .
+.
+.
+.Ss BUILDFILES SHELL VARIABLES
+.
+.
+.Pp
+Presented in alphabetical order.
+.
+.Bl -tag -width packages
+.
+.
+.It Ev ARCH
+.Pp
+(readonly) The current architecture
+.Nm
+is being run on, according to
+.Xr dpkg-architecture 1 .
+You can use it in your buildfile if you need particular things
+for a given architecture.
+.
+.
+.It Ev BUILD_DEPENDS
+.Pp
+(facultative) The build and test dependencies. This is a multiline shell
+string, with one dependency per line. Blank lines are ignored. The versioning
+scheme is
+described in
+.Xr deb-src-control 5 ,
+and a full example can be found in
+.Pa infrastructure/templates/build.template .
+.Pp
+Note that
+.Xr dh_make 1
+tends to add the configure/build system as a BUILD_DEPENDS out of the box. There is no
+.Ev TEST_DEPENDS
+in
+.Nm ,
+you must specify them in BUILD_DEPENDS.
+.Pp
+If your swirl depends on another swirl, see
+.Sx SWIRL_DEPENDS .
+.
+.
+.It Ev CONFLICTS
+.Pp
+(facultative) If your swirl conflicts with an official Debian package, put the
+Debian package here and it will be added as a conflict. It is here for
+convenience but should be used as a last resort. See
+.Sx BUILD_DEPENDS
+about the format used.
+.
+.
+.It Ev DESCRIPTION
+.Pp
+(mandatory) A description for your package. This string should be 1 line long
+at least, but can span on several lines. The first non-empty line will be the
+description that will appear in
+.Ic dpkg
+.Fl l .
+It should not be longer than 60 characters.
+.Pp
+(facultative) The following lines are the long description that are shown when
+using
+.Ic apt
+.Cm show <PKGNAME> .
+When in doubt, look at
+.Pa infrastructure/templates/build.template .
+.
+.
+.It Ev EXTRA_SOURCES
+.Pp
+(facultative) a list of extra sources to download. This is a multiline shell
+string, with one URL per line. Blank lines are ignored. An example of
+that can be found in
+.Pa infrastructure/templates/build.template .
+.Pp
+They are not extracted, just downloaded by
+.Xr curl 1
+in
+.Pa $SWIRLDIR/distfiles/{PKGNAME}-{VERSION}
+and eventually checked against a checksum as described in
+.Sx THE SHA512SUM FILE .
+You can work with them later thanks to a
+.Sx prebuild
+hook. See also
+.Sx SOURCE ,
+and comments in the
+.Sx download
+hook if these extra sources cannot be extracted by
+.Xr bsdtar 1 ,
+which should be used as the default extractor.
+.
+.
+.It Ev GO_IMPORT_PATH
+.Pp
+(mandatory for golang modules) The import path of the go module. This must match
+the "module" line that can you find in the source's
+.Pa go.mod .
+See
+.Pa unmaintained-swirls/golang-helloworld
+for an example.
+.
+.
+.It Ev HOMEPAGE
+.Pp
+(mandatory) The upstream www homepage. If there is none, leave this empty,
+but not undefined.
+.
+.
+.It Ev LICENSE
+.Pp
+(mandatory) The license file(s) that can be found in upstream tarball. These
+are relative to the root of the sources or absolute, separated by space(s). If
+files have spaces or special characters, you should quote them. They are
+concatenated with one blank line between each others in
+.Pa debian/copyright .
+If the files mentioned in LICENSE are non-existant
+.Xr buildswirl 1
+will immediatly exit with a failure. There are more informations about this in
+.Sx Providing a license in the package is mandatory .
+
+.
+.
+.It Ev MAKE_JOBS
+.Pp
+(facultative) By default,
+.Nm
+will use a number of build jobs that is equal to the
+.Xr nproc 1
+output. Sometimes this is not adequate, for example if the software you are
+building does not support parallel processing or takes too much memory.
+MAKE_JOBS defines the number of parallel jobs during different steps of the
+build. By convention, if some software needs 4GB of RAM or more by job
+consistently put
+.Va MAKE_JOBS=1 .
+.Pp
+Adding a comment about why MAKE_JOBS is used is considered good practice.
+.
+.
+.It Ev OVERRIDE_SRCDIR
+.Pp
+(facultative) The extracted
+.Sx SOURCE
+tarball directory is supposed to be in the
+.Va {PKGNAME}-{VERSION}
+format. If it is not (github for example), you can override
+the source directory by defining that variable.
+.
+.
+.It Ev PKGNAME
+.Pp
+The generated Debian package name. It is discouraged to clash your package name
+with Debian, if needed add a suffix, for example vim -> vim-swirl. Most often
+you want to use the official tools for customising an official package, using
+.Nm
+for that is discouraged.
+.Lk https://wiki.debian.org/BuildingTutorial The Debian wiki has a tutorial for this .
+.
+.
+.It Ev REVISION
+.Pp
+(mandatory) There are swirl revisions, not Debian ones. They start at 0, and
+should be incremented if you need to modify a package without changing
+.Sx VERSION .
+If
+.Sx VERSION
+is changed,
+.Sx REVISION
+should be brought back to 0.
+.Pp
+Debian revisions are not supported because
+.Nm swirlbuild
+\'s simplicity is leading us to not use the 3.0/quilt format but the native one,
+and we should not mess with Debian proper mechanics. For more informations
+about Debian package formats, see
+.Xr dpkg-source 1 .
+.
+.It Ev RUN_DEPENDS
+.Pp
+(facultative) Runtime dependencies, in the same format and restrictions than
+.Sx BUILD_DEPENDS .
+There is no
+.Ev LIB_DEPENDS
+in
+.Nm ,
+there are generated during the Debian package creation if binaries are produced
+AND libraries linked. If not, like
+.Xr dh_python 1
+managed builds, library dependencies should be mentioned in RUN_DEPENDS.
+.Pp
+If your swirl depends on another swirl, see
+.Sx SWIRL_DEPENDS .
+.
+.
+.It Ev SOURCE
+.Pp
+(facultative) The source tarball download location.
+It supports all protocols supported by
+.Xr curl 1 ,
+and it will be extracted by
+.Xr bsdtar 1
+that supports
+.Lk https://www.freebsd.org/cgi/man.cgi?query=libarchive-formats&sektion=5&n=1 \
+the following archive formats
+(or use "apt show" on your version of libarchiveNN).
+.Pp
+Only one source is allowed by
+.Xr dh_make 1 .
+If you need more files to download, see
+.Sx EXTRA_SOURCES .
+.Sx OVERRIDE_SRCDIR
+explains the expected directory format of the extracted archive and how to cope
+when it is not compliant.
+.Pp
+SOURCE can be checked against a SHA512 checksum, see
+.Sx THE SHA512SUM FILE .
+.
+.
+.It Ev SWIRL_DEPENDS
+.Pp
+(virtual) Does not exist really. Unused for now. If your swirl depends on other
+swirls, just call
+.Pa \&./buildswirl ,
+with dependencies by order of precedence. Note that you still need to mention said
+depends packages name in
+.Sx BUILD_DEPENDS
+and
+.Sx RUN_DEPENDS .
+For an example of this, see
+.Pa infrastructure/templates/build.template .
+.
+.
+.It Ev VERSION
+.Pp
+(mandatory) The upstream version of the package. Note that EPOCH is not supported yet,
+so be very careful about your numbering. The local package version will be:
+.Va {VERSION}+swirl{REVISION} .
+.
+.Pp
+Debian versioning scheme is explained at
+.Xr deb-version 7 .
+You can compare versions with the
+.Xr dpkg 1
+.Fa --compare-versions
+flag.
+.
+.El
+.
+.
+.Ss BUILDFILES HOOKS
+.
+.
+.Pp
+Hooks are a fairly advanced topic, and should be used only as a last resort,
+unless you just want to package some local files.
+.Pp
+They are simple shell functions that can be used for various intents. You could
+override internal (starting with an underscore) functions, but this is a recipe
+for disaster. Internal variables not detailed here should not be used as well.
+.Pp
+The following shell variables from
+.Builder
+can be used in your hooks:
+.
+.Bl -tag -width packages
+.
+.It Va $tmpdir
+.Pp
+The temporary directory where the upstream source and the generated
+.Xr dh_make 1
+files are present.
+.
+.It Va $srcdir
+.Pp
+The directory where the upstream source is. The
+.Pa debian/
+directory is a subdirectory of it, see also
+.Sx THE DEBIAN SUBDIRECTORY
+\&.
+.
+.It Va $swirldir
+.Pp
+The directory where the current buildfile being used is located.
+.
+.It Va $distdir
+.Pp
+The directory where the files downloaded by
+.Sx SOURCE
+and
+.Sx EXTRA_SOURCES
+can be found. Useful in a
+.Sx prebuild
+hook.
+.El
+.
+.Pp
+Here are the available hooks:
+.
+.Bl -tag -width packages
+.
+.It Fn download
+.Pp
+Avoid using it for publicly distributed swirls, because we cannot get any checksum.
+.Pp
+Substitute the usual source download and extraction by your own. This can be
+useful to create a package from local files, or use alternative download
+methods.
+At this stage,
+.Va $swirldir,
+.Va $distdir
+and
+.Va $tmpdir
+are defined, but not
+.Va $srcdir .
+.Pp
+Everything is up to you, but the good practice is to create the
+.Pa ${tmpdir}/${PKGNAME}-${VERSION}
+directory and put files into it. Downloads should be made with
+.Xr curl 1 .
+If you need a "fetcher" other than
+.Xr curl 1 ,
+you will need to put a safeguard asking the user to install "fetcher" on their
+build machine. Same for the extractor used.
+A simple example of this hook can be found in
+.Pa $SWIRLBUILD/unmaintained-swirls/justsomefiles/build .
+.
+.It Fn prebuild
+.Pp
+Run some custom actions before the source package build. This is useful to
+inject files from your buildfile's
+.Pa files/
+directory, notably a Makefile.
+.Pp
+This is also where you can work on your
+.Sx EXTRA_SOURCES
+files that are placed in
+.Va ${distdir} .
+.Pp
+Example of this hook can be found in
+.Pa unmaintained-swirls/findfiles .
+.
+.It Fn postbuild
+.Pp
+Run a custom action after the package build and repository update. Unused, but
+it is meant to be used to display some message to users after the build if
+needed.
+.El
+.
+.
+.Ss BUILDFILES DEBUG VARIABLES
+.
+.
+There are meant to be used not only when you create a swirl. Final users can
+also make use of them as environment variables. It is recommended to keep them
+around in the build file until you have finished your work.
+.Pp
+Here is the list of available debug variables:
+.
+.Bl -tag -width packages
+.
+.It Ev DEBUG_SOURCE
+.Pp
+If you define DEBUG_SOURCE, the build will stop before building the binary
+package and open a shell, where you can debug issues in your patches,
+.Pa debian/
+files and so on. As soon as the shell is exited, the temporary directory is
+removed. That is necessary if you need to add a patch to your swirl.
+.Pp
+At this stage the source tarball than
+.Xr pbuilder 8
+will use is already generated as you can see if you enter the debug source
+shell.
+.
+The
+.Ev SWIRLDIR
+environment variable is set and points to the current swirl directory.
+.
+.It Ev DEBUG_RMPKG
+.Pp
+Build a package even though it is already built. You should not use it if said
+package version and revision has been installed somewhere. It is here in case
+it appears that your built package has some issues like misplaced files.
+.El
+.
+.
+.Sh THE DEBIAN SUBDIRECTORY
+.
+.
+Actually it is lowercase. Whatever is present in this directory will override what
+.Xr dh_make 1
+did.
+.
+.Pp
+.Lk https://www.debian.org/doc/manuals/maint-guide/index.en.html The Debian Maintainer Guide
+contains a lot of informations about what can be used to make your building process easier,
+simply by defining some files, like adding users, services, documentations etc.
+.Pp
+The whole
+.Nm
+tree has many examples for these files.
+.
+.Pp
+Try your best to use the "facilities" provided by this directory. Using them is
+more future proof than injecting a Makefile through
+.Sx prebuild .
+.
+.
+.Ss Providing a license in the package is mandatory
+.Pp
+It is mandatory to include the software license, and/or the end user license
+agreement (EULA), and potentially other files required by upstream into the
+produced package if you intend to make your swirl public, and as such being
+used by third parties.
+.Pp
+As mentioned in the documentation for
+.Sx LICENSE
+this variable must point to valid license file(s).
+.Nm
+does not include license markers to avoid misinterpretation of upstream
+licensing terms. Here are some special cases when upstream does not provide some
+valid license file(s). That list may grow over time.
+.Bl -bullet
+.It
+The swirl is not distributed to the public: use simply
+.Pa /dev/null
+in
+.Ev LICENSE .
+.It
+In any other case, ask upstream to add a LICENSE file.
+.Lk https://choosealicense.com/no-permission/ This rationale
+may convince them. Until a LICENSE file is provided, the
+swirl should stay private.
+.El
+.
+.Pp
+This matters for users, in case they inavertendly distribute generated Debian
+packages to the general public, given that the full license text and the
+.Sx SOURCE
+URL are provided in
+.Pa /usr/share/doc/<PKGNAME>/copyright ,
+it respects said license conditions in many, but not all, cases.
+.Pp
+This matters for swirls creators, in case upstream's licensing file layout is
+not clear and the license is misrepresented in your swirl, then contested by
+upstream. Upstream got to do their homework and provide either a single license
+file or location including all the possible licences used in their software
+source code. Veracrypt and PPSSPP are good examples of that.
+.Pp
+See also LEGAL in
+.Xr swirlbuild 7 .
+.
+.Sh THE FILES SUBDIRECTORY
+.
+.
+.Pp
+This is where you can drop various files needed to the build. Note that these
+files are not automatically added to the build. Using the
+.Sx prebuild
+hook is recommended to do so. A good example is
+.Pa unmaintained-swirls/findfiles.
+.
+.Sh THE PATCHES SUBDIRECTORY
+.
+.
+.Pp
+This is lowercase as well.
+.Pp
+.Nm
+has a very basic patching system. Every file ending with the
+.Pa patch
+extension in the
+.Pa patches
+directory of the swirl is considered a patch to be applied. Patches management
+is fully manual.
+.Pp
+Patches from VCS like
+.Xr git 1
+cannot be pushed as is. Creating patches for swirls is shown in
+.Sx USUAL WORKFLOW .
+.
+.
+.Sh THE SHA512SUM FILE
+.
+.
+.Pp
+Lowercase as well, this file should be present if you distribute your swirl. This
+contains the SHA512 checksum of the downloadable
+.Sx SOURCE
+and
+.Sx EXTRA_SOURCES .
+.Pp
+If
+.Sx SOURCE
+is not defined, that file is totally ignored.
+.Pp
+While you can generate it manually with
+.Xr sha512sum 1 ,
+.Builder
+includes an option to generate it, and its usage is detailed there.
+.
+.
+.Sh FILES
+.
+.
+.Pp
+Here is the list of everything included in $SWIRLBUILD.
+.Bl -tag -width packages
+.
+.It Pa buildswirl
+.Pp
+Present in that list for exhaustivity
+.
+.It Pa infrastructure/
+.Pp
+Contains mostly documentations and helper scripts.
+.
+.It Pa infrastructure/bin/deploy
+.Pp
+This script is a small helper that installs necessary packages for
+.Nm
+operation.
+.
+.It Pa infrastructure/bin/masstest
+.Pp
+Build all the swirls in
+.Pa swirls/ .
+Used for development tests, do not try this at home.
+.
+.It Pa infrastructure/bin/repoupdate
+.Pp
+Update your repository if some packages have been removed from there. Usage is
+detailed in
+.Builder .
+.Pp
+It is also used internally by
+.Pa buildswirl
+to update the repository indices after a successful build.
+.It Pa infrastructure/docs/man
+.Pp
+All the manpages for
+.Nm .
+.It Pa infrastructure/docs/html
+.Pp
+All the manpages for
+.Nm
+in HTML format. They're up to date with the manpages, since i use them a lot,
+thanks to
+.Pa infrastructure/docs/Makefile .
+.
+.It Pa infrastructure/pbuilder/hooks
+.Pp
+Some
+.Xr pbuilder 8
+hooks, whose names clearly indicates the intent. See its manpage for the format
+used.
+.
+.It Pa infrastructure/templates/
+.Pp
+Templates that you may need when creating a swirl.
+.
+.It Pa logs/
+.Pp
+.Nm
+generates logs for every build thanks to
+.Xr pbuilder 8 .
+.
+.It Pa myswirls/
+.Pp
+Files included in this directory are not tracked by
+.Xr git 1 .
+If you want to put personal swirls inside your copy of the
+.Nm
+repository, you can put them there.
+.
+.It Pa swirls/
+.Pp
+All the officially maintained swirls. They are demo for the project.
+.
+.It Pa unmaintained-swirls/
+.Pp
+These swirls are probably out-of-date, finally officially packaged, or kept
+as examples to show x or y feature. And also probably broken.
+.
+.It Pa unmaintained-swirls/README.md
+.Pp
+The status of every unmaintained swirls, and what they are featuring
+that can be interesting for your own swirls.
+.
+.El
+.
+.
+.Sh ENVIRONMENT
+.Pp
+See also
+.Sx BUILDFILES DEBUG VARIABLES .
+.Bl -tag -width packages
+.It Ev DEBEMAIL
+.Pp
+Used by
+.Xr dh_make 1 and
+.Xr pbuilder 8 .
+This defines the maintainer email address present in the package.
+.
+.It Ev DEBFULLNAME
+.Pp
+Used by
+.Xr dh_make 1 and
+.Xr pbuilder 8 .
+This defines the maintainer firstname, lastname present in the package. By
+default, it tries to fetch that from your account infos.
+.
+.It Sx MAKE_JOBS
+This variable can be used if it is not specified in the buildfile, and will
+define the numbers of parallel jobs during various steps of the build.
+.El
+.
+.
+.Sh SEE ALSO
+.
+.
+.Pp
+.Xr buildswirl 1
+details basic informations on how to build a swirl and several maintenance tips.
+.Xr swirlbuild 7
+is an intro to
+.Nm
+and details its deployment, scope, motivations and caveats.
+.Pp
+.Lk https://www.debian.org/doc/manuals/maint-guide/index.en.html The Debian Maintainer Guide
+is a good basic reference, as well as the
+.Xr debhelper 7
+manpage.
+.
+.
+.Sh PBUILDER
+.Pp
+.Xr pbuilder 8
+maintains its own
+.Xr apt 8
+cache.
+.Nm
+does not clean the
+.Pa /var/cache/pbuilder/result
+directory as well.
+You can clean up by using:
+.Bd -literal
+sudo pbuilder clean
+sudo rm /var/cache/pbuilder/result/*
+.Ed
+.
+.Pp
+By default
+.Xr pbuilder 8
+cannot access to any network when starting to build a package.
+.Sy "" This is not the case in the
+.Nm
+.Sy "" system.
+This avoids packaging dozen of crates or go modules simply by using cargo and
+"go build" in a Makefile.
+.Pp
+The
+.Pa ca-certificates
+package should added as a
+.Sx BUILD_DEPENDS
+if you encounter TLS certificate errors during the build.
+.
+.
+.Ss The pbuilder(8) debug/fail shell
+.Pp
+If the build fails a shell will be opened in the
+.Xr pbuilder 8
+chroot, and will get you to the source directory of the package.
+.Xr vi 1
+will be installed. That can help you see the reason for a failure.
+Quitting that shell will destroy the chroot. It is a hook than can be found at
+.Pa infrastructure/pbuilder/hooks/C99build_open_debug_shell .
+.
+.Pp
+You can trigger the
+.Xr pbuilder 8
+failure shell for any
+.Xr dh_* 1
+command, with a specially crafted
+.Pa debian/rules
+file, allowing you to debug the build. An example can be found at
+.Pa $SWIRLBUILD/infrastructure/templates/rules.template .
+.
+.
+.Sh USUAL WORKFLOW
+.
+.
+.Pp
+I will go with a non trivial yet easy real world example that can you find at
+.Pa $SWIRLBUILD/unmaintained-swirls/badwolf.
+This is lengthy because i wanted to showcase a lot of things
+.Nm
+can propose.
+.
+.Bd -literal
+
+cd your_swirlbuild_root_directory
+mkdir swirls/badwolf && cd swirls/badwolf
+cp ../../infrastructure/templates/build.template build
+
+# modify the buildfile to something that looks sensible
+# and uncomment DEBUG_SOURCE=1 in the build file. While
+# here add the sha512sum file.
+
+\&../../buildswirl $PWD checksum
+\&../../buildswirl $PWD
+exit
+
+# This looked okayish out of the box. Comment DEBUG_SOURCE=1 and try the build.
+
+\&../../buildswirl $PWD
+
+# dh_auto_clean
+#	make -j12 distclean
+# Failed with Error: You need to execute ./configure before running make
+# I'll need to override dh_auto_clean
+
+mkdir debian
+cp ../../infrastructure/templates/rules.template debian/rules
+
+# I edit debian/rules and try again
+
+\&../../buildswirl $PWD
+
+# Missing dependencies, so editing the buildfile again
+
+\&../../buildswirl $PWD
+
+# dh_usrlocal: error: debian/badwolf/usr/local/bin/badwolf is not a directory
+# I will need to change PREFIX in debian/rules, also the configure script
+# asked for more changes, to specify some extra environment options
+
+\&../../buildswirl $PWD
+
+# It builds! But I have found out by inspecting the built package with
+# xarchiver that BadWolf installs its documentation where it should not. I
+# should override that destination directory with an environment variable in
+# debian/rules, but for the sake of the demonstration, I will make a patch.
+# Also I set up DEBUG_RMPKG=1 in the buildfile.
+
+env DEBUG_SOURCE=1 ../../buildswirl $PWD
+cd badwolf-1.2.2
+cp configure{,.orig}
+
+# I change the DOCDIR variable to what we need in configure,
+# then check the result:
+
+diff -u configure{.orig,}
+
+# Looks good, time to add it as a patch and exit:
+
+mkdir $SWIRLDIR/patches
+diff -u configure{.orig,} > $SWIRLDIR/patches/fix_documentation_path.patch
+exit
+
+# This should be our final build!
+
+\&../../buildswirl $PWD
+
+# After inspection it is fine. I remove all the unnecessary comment stuff in
+# build. Time to test the runtime and have fun!
+
+sudo apt update
+sudo apt install badwolf
+.Ed

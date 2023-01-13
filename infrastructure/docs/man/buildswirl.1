@@ -1,0 +1,200 @@
+.Dd $Mdocdate$
+.Dt buildswirl 1
+.Os Debian sid
+.Sh NAME
+.Nm buildswirl
+.Nd build a swirl package
+.
+.
+.Sh SYNOPSIS
+.Nm ./buildswirl
+.Pa swirls/<swirlname>
+.Op checksum
+.Nm cd swirls/<swirlname> && ../../buildswirl $PWD
+.Op checksum
+.
+.
+.Sh DESCRIPTION
+.
+.
+This manual assumes you have followed the "QuickStart" instructions at
+.Xr swirlbuild 7 .
+.
+.Pp
+The
+.Nm
+utility builds a Debian package for a given
+.Ar swirlname ,
+in your
+.Pa $SWIRLBUILD/repository
+directory, and then updates the necessary files to make that directory a
+basic Debian repository.
+.Pp
+When applicable,
+.Nm
+will build dbgsym (debug symbols) packages, and will make them available in the
+repository.
+.
+.
+.Sh OPTIONS
+.
+.
+.Bl -tag -width packages
+.
+.It Va checksum
+.Pp
+If it is appended to the command line,
+.Nm
+will download all the source files necessary to build the swirl, compute their
+checksums, and then create a
+.Pa $SWIRLBUILD/<swirlname>/sha512sum
+file with them, provided that it does not exist.
+.Pp
+If
+.Pa $SWIRLBUILD/<swirlname>/sha512sum
+exists, it will quit immediatly.
+.Pp
+This option should not be used if you do not intend to create or maintain a
+swirl.
+.
+.El
+.
+.
+.Sh MANUALLY UPDATING THE REPOSITORY, MOVED/DELETED REPOSITORY
+.
+.
+.Pp
+If you removed a package from the repository, the
+.Pa Packages
+and/or the
+.Pa Release
+files, the repository itself or added a third party deb package, you
+must update the metadata, otherwise
+.Xr apt 8
+will error out.
+.Pp
+To do so, you can issue:
+.Pp
+.Bd -literal
+$SWIRLBUILD/infrastructure/bin/repoupdate $SWIRLBUILD/repository
+.Ed
+.Pp
+The same applies if you moved the $SWIRLBUILD tree or the $SWIRLBUILD/repository
+directory.
+.Pp
+In case your intention is to not use swirlbuild and its repository anymore,
+you just need to remove the
+.Pa /etc/apt/sources.list.d/swirlpkg.list
+file as root to unlock the situation.
+.
+.
+.Sh MAINTENANCE
+.
+.
+.Ss pbuilder
+.Pp
+.Xr pbuilder 8
+has its own
+.Xr apt 8
+cache and packages store, that can be cleaned by using:
+.Bd -literal
+sudo pbuilder clean
+sudo rm /var/cache/pbuilder/result/*
+.Ed
+.
+.Ss distfiles, logs and repository
+.Bl -tag -width packages
+.
+.It Pa $SWIRLBUILD/distfiles
+.Pp
+contains the downloaded sources of the swirl you have built. It can safely be
+removed, but at the next build sources will be downloaded again.
+.
+.It Pa $SWIRLBUILD/logs
+.Pp
+contains the logs generated during swirl builds. This can be safely removed.
+.
+.It Pa $SWIRLBUILD/repository
+.Pp
+Your local repository directory.
+.Nm
+does not remove old packages, and there are no official way to do so, but
+$WEBSEARCHENGINE has some proposals. The
+.Pa Release
+and
+.Pa Packages
+files should never be removed.
+.Pp
+After you are done, you must proceed as described in
+.Sx MANUALLY UPDATING THE REPOSITORY, MOVED/DELETED REPOSITORY
+.El
+.
+.
+.Sh FILES
+.
+.
+.Bl -tag -width packages
+.It Pa $SWIRLBUILD/myswirls
+.Pp
+Files included in this directory are not tracked by
+.Xr git 1 .
+If you want to put personal swirls inside your copy of the
+.Nm
+repository, you can put them there.
+.
+.
+.Sh EXIT STATUS
+.
+.
+.Ex -std
+.
+.
+.Sh ENVIRONMENT
+.
+.
+.Bl -tag -width packages
+.It Ev MAKE_JOBS
+.Pp
+This variable can be used if it is not specified in the buildfile, and will
+define the numbers of parallel jobs during various steps of the build. This may
+be useful if you are out of memory during a build. It may be overriden by a
+swirl if we have found out that a single job takes 4GB of memory or more,
+with a value of 1, which is rarely the case.
+.El
+.
+.
+.Sh SEE ALSO
+.
+.
+.Pp
+If it is the first time you are using
+.Nm ,
+it is recommended to read its intro at
+.Xr swirlbuild 7 .
+.
+.Pp
+The packager reference is available at
+.Xr swirlbuild 5 .
+.
+.
+.Sh SECURITY CONSIDERATIONS
+.
+.
+.Pp
+A swirl is mostly composed of files that will be executed on your computer.
+Among others,
+.Pa debian/rules
+and
+.Pa build
+are executed. Be careful to always download a swirl from a trusted source, or
+review the swirl to ensure no malicious code is executed.
+.
+.
+.Sh CAVEATS
+.
+.
+Using the
+.Pa swirls/
+directory is a convention, actually
+.Nm
+should be able to work with any directory provided.

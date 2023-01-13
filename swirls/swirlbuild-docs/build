@@ -1,0 +1,25 @@
+DESCRIPTION="swirlbuild build system documentation
+ This package allows you to install swirlbuild's documentation on
+ your system.
+
+ Manpages are available through man(1).
+
+ HTML documentation is at file:///usr/share/doc/swirlbuild-docs/html .
+"
+
+HOMEPAGE="https://mascaldotfr.github.io/swirlbuild"
+
+PKGNAME=swirlbuild-docs
+VERSION=3
+REVISION=0
+
+LICENSE="LICENSE"
+
+download() {
+ 	target_dir="${tmpdir}/${PKGNAME}-${VERSION}"
+	mkdir -p "${target_dir}"
+	cp -a 	"${swirldir}"/../../infrastructure/docs/man \
+		"${swirldir}"/../../infrastructure/docs/html \
+		"${swirldir}"/../../LICENSE \
+		"${target_dir}"
+}

@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="style.css" type="text/css" media="all"/>
+  <title>swirlbuild(7)</title>
+</head>
+<body>
+<table class="head">
+  <tr>
+    <td class="head-ltitle">swirlbuild(7)</td>
+    <td class="head-vol">Miscellaneous Information Manual</td>
+    <td class="head-rtitle">swirlbuild(7)</td>
+  </tr>
+</table>
+<div class="manual-text">
+<section class="Sh">
+<h1 class="Sh" id="NAME"><a class="permalink" href="#NAME">NAME</a></h1>
+<p class="Pp"><code class="Nm">swirlbuild</code> &#x2014;
+    <span class="Nd">rudimentary (UNOFFICIAL) package build system for Debian
+    Sid</span></p>
+</section>
+<h1 class="Sh">TABLE OF CONTENTS</h1>
+<ul class="Bl-compact">
+  <li><a href="#DESCRIPTION">DESCRIPTION</a>
+    <ul class="Bl-compact">
+      <li><a href="#SWIRL_?">SWIRL?</a></li>
+    </ul>
+  </li>
+  <li><a href="#QUICKSTART">QUICKSTART</a>
+    <ul class="Bl-compact">
+      <li><a href="#Deployment">Deployment</a></li>
+      <li><a href="#Building_your_first_swirl">Building your first
+        swirl</a></li>
+    </ul>
+  </li>
+  <li><a href="#USING_THE_REPOSITORY_ON_OTHER_MACHINES">USING THE REPOSITORY ON
+      OTHER MACHINES</a></li>
+  <li><a href="#CREATING_YOUR_OWN_SWIRLS">CREATING YOUR OWN SWIRLS</a></li>
+  <li><a href="#MOTIVATIONS">MOTIVATIONS</a></li>
+  <li><a href="#CAVEATS">CAVEATS</a>
+    <ul class="Bl-compact">
+      <li><a href="#They_may_be_a_deal_breaker">They may be a deal
+        breaker</a></li>
+      <li><a href="#Multi_Architecture">Multi Architecture</a></li>
+    </ul>
+  </li>
+  <li><a href="#BUGS">BUGS</a></li>
+  <li><a href="#SEE_ALSO">SEE ALSO</a></li>
+  <li><a href="#CONTRIBUTING">CONTRIBUTING</a></li>
+  <li><a href="#LEGAL">LEGAL</a>
+    <ul class="Bl-compact">
+      <li><a href="#Representation_and_respect_of_upstream_licenses_in_swirlbuild">Representation
+          and respect of upstream licenses in swirlbuild</a></li>
+      <li><a href="#To_upstream_authors_and_contributors">To upstream authors
+          and contributors</a></li>
+    </ul>
+  </li>
+</ul>
+<section class="Sh">
+<h1 class="Sh" id="DESCRIPTION"><a class="permalink" href="#DESCRIPTION">DESCRIPTION</a></h1>
+<p class="Pp"><i class="Em"> (If you read this in a browser, this is an HTML
+    version of</i> <code class="Nm">swirlbuild</code> <i class="Em"> 's</i>
+    <i class="Em"> intro manpage. Links to system manual pages will not
+    work).</i></p>
+<p class="Pp"><code class="Nm">swirlbuild</code> is a thin layer between
+    <a class="Xr" href="dh_make.1.html">dh_make(1)</a>,
+    <a class="Xr" href="pbuilder.8.html">pbuilder(8)</a> and
+    <a class="Xr" href="apt-ftparchive.1.html">apt-ftparchive(1)</a> to allow
+    creating and building minimally viable Debian packages, without the usual
+    paperwork and directory dance that comes with the official method. It also
+    maintains a local (file:///) repository to install packages easily. Only
+    Debian Sid (unstable) is supported.</p>
+<p class="Pp"><code class="Nm">swirlbuild</code> totally integrates itself
+    inside the Debian packages management system, and does not need a bootstrap,
+    just some Debian packages installed and the swirlbuild tree.</p>
+<p class="Pp">It is heavily influenced by OpenBSD's ports collection, while some
+    hints were taken from Alpine's Abuild and CRUX's ports.</p>
+<p class="Pp">The heavy lifting is done by:</p>
+<dl class="Bl-tag">
+  <dt><a class="Xr" href="dh_make.1.html">dh_make(1)</a></dt>
+  <dd>creates all the necessary paperwork needed to reduce ours.</dd>
+  <dt><a class="Xr" href="pbuilder.8.html">pbuilder(8)</a></dt>
+  <dd>build packages in a chroot; when building with
+      <code class="Nm">swirlbuild</code>, no development packages will be
+      installed on your system.</dd>
+  <dt><a class="Xr" href="you.4.html">you(4)</a></dt>
+  <dd>While <code class="Nm">swirlbuild</code> simplifies a lot the creation of
+      Debian packages, you will still have to do some work. If you do not feel
+      confortable with that, you may have a look at
+      <a class="Lk" href="https://github.com/jordansissel/fpm">the effing
+      package management (fpm)</a> , that is easier but less flexible out of the
+      box.</dd>
+</dl>
+<p class="Pp">See <a class="Sx" href="#MOTIVATIONS">MOTIVATIONS</a> on why I
+    ended up creating this, and <a class="Sx" href="#CAVEATS">CAVEATS</a>
+    because it is a rudimentary system, and may not fit your use case.</p>
+<section class="Ss">
+<h2 class="Ss" id="SWIRL_?"><a class="permalink" href="#SWIRL_?">SWIRL?</a></h2>
+<p class="Pp">SWIRL means <b>S</b>oft<b>W</b>are <b>I</b>n Ou<b>R</b>
+    <b>L</b>AN. An obvious reference to Debian's swirl logo and
+    <code class="Nm">swirlbuild</code> &#x00B4;s
+    <a class="Sx" href="#MOTIVATIONS">MOTIVATIONS</a>.
+    <code class="Nm">swirlbuild</code> is not a Debian-backed software, and is
+    totally unofficial.</p>
+<p class="Pp">Because &quot;ports&quot; means something else in
+    <a class="Lk" href="https://www.debian.org/ports/index.en.html">Debian's
+    jargon</a> than the usual BSD meaning of &quot;ports&quot;, the recipe to
+    build a package is called a <b class="Sy"> swirl</b>.</p>
+</section>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="QUICKSTART"><a class="permalink" href="#QUICKSTART">QUICKSTART</a></h1>
+<p class="Pp"><code class="Nm">swirlbuild</code> needs
+    <a class="Xr" href="sudo.8.html">sudo(8)</a> and your current user must be
+    able to use it to be root at least for running
+    <a class="Xr" href="pbuilder.8.html">pbuilder(8)</a> For more informations
+    see <a class="Lk" href="https://wiki.debian.org/sudo">the Debian wiki
+    documentation about this</a>.</p>
+<section class="Ss">
+<h2 class="Ss" id="Deployment"><a class="permalink" href="#Deployment">Deployment</a></h2>
+<p class="Pp">You usually do this once by machine.</p>
+<p class="Pp">Assuming you have downloaded <code class="Nm">swirlbuild</code> in
+    your home directory:</p>
+<div class="Bd Pp Li">
+<pre>$ cd swirlbuild
+$ ./infrastructure/bin/deploy builder</pre>
+</div>
+<p class="Pp">There you will be asked to validate the installation of some
+    packages, sadly it is always too many but it is not our fault ;) An empty
+    repository will be created in
+    <span class="Pa">~/swirlbuild/repository</span> and an entry in
+    <span class="Pa">/etc/apt/sources.list.d</span> will be added for it. Also a
+    <a class="Xr" href="pbuilder.8.html">pbuilder(8)</a> base chroot will be
+    created.</p>
+</section>
+<section class="Ss">
+<h2 class="Ss" id="Building_your_first_swirl"><a class="permalink" href="#Building_your_first_swirl">Building
+  your first swirl</a></h2>
+<p class="Pp">First thing first: you should ALWAYS ensure that your system is up
+    to date before running
+    <a class="Xr" href="buildswirl.1.html">buildswirl(1)</a>.</p>
+<p class="Pp">We will start with <span class="Pa">swirls/oksh</span> because it
+    is simple; it is the OpenBSD version of the Korn Shell. Do not move from
+    your ~/swirlbuild directory and run this:</p>
+<div class="Bd Pp Li">
+<pre>$ sudo apt update</pre>
+</div>
+<p class="Pp">If you have a recently installed Debian Sid,
+    <a class="Xr" href="apt.8.html">apt(8)</a> will complain about permissions.
+    It is because Debian made a change to $HOME permissions for newly created
+    users. See
+    <a class="Lk" href="https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1014901">Debian
+    bug report 1014901</a>.</p>
+<p class="Pp">You can ignore the warning,
+    <a class="Xr" href="chmod.1.html">chmod(1)</a> 0755 your $HOME, and many
+    more options. Let's continue to the installation and the test of that oksh
+    swirl:</p>
+<div class="Bd Pp Li">
+<pre>$ sudo apt upgrade
+$ ./buildswirl swirls/oksh</pre>
+</div>
+<p class="Pp">You will be met by a wall of text. Your password may be asked by
+    <a class="Xr" href="sudo.8.html">sudo(8)</a> for
+    <a class="Xr" href="pbuilder.8.html">pbuilder(8)</a> use. Grab a coffee/tea
+    and/or feel yourself like a hacker.</p>
+<p class="Pp">Hopefully the build has ended. <code class="Nm">swirlbuild</code>
+    never installs packages by itself.</p>
+<div class="Bd Pp Li">
+<pre>$ sudo apt install oksh
+$ oksh
+oksh&gt; echo $OKSH_VERSION
+7.2
+oksh&gt; exit
+$ sudo apt remove oksh</pre>
+</div>
+<p class="Pp">The documentation for
+    <a class="Xr" href="buildswirl.1.html">buildswirl(1)</a>, and the whole
+    <code class="Nm">swirlbuild</code> system can be installed on your system
+    just like this:</p>
+<div class="Bd Pp Li">
+<pre>$ cd ${HOME}/swirlbuild &amp;&amp; ./buildswirl swirls/swirlbuild-docs</pre>
+</div>
+<p class="Pp">HTML versions of the manpages are also available in
+    <span class="Pa">/usr/share/doc/swirlbuild-docs/html</span>.</p>
+<p class="Pp">Through the documentation, you may see references to
+    <span class="Pa">$SWIRLBUILD</span>, which has to be replaced by where you
+    have put the <code class="Nm">swirlbuild</code> tree on your computer.</p>
+</section>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="USING_THE_REPOSITORY_ON_OTHER_MACHINES"><a class="permalink" href="#USING_THE_REPOSITORY_ON_OTHER_MACHINES">USING
+  THE REPOSITORY ON OTHER MACHINES</a></h1>
+<p class="Pp">There are many ways to deploy <code class="Nm">swirlbuild</code>
+    across the network. We will take something you have already probably
+    experienced for that: <a class="Xr" href="rsync.1.html">rsync(1)</a> coupled
+    with <a class="Xr" href="ssh.1.html">ssh(1)</a>.</p>
+<p class="Pp">Let's say we have a <var class="Va">desktop</var> machine, where
+    you have built some packages, and you want them to be installed on the
+    <var class="Va">laptop</var> machine.</p>
+<p class="Pp">This is implied that the two machines have the same architecture,
+    see <a class="Sx" href="#Multi_Architecture">Multi Architecture</a> about
+    why. First we will copy swirlbuild from <var class="Va">desktop</var> to
+    <var class="Va">laptop</var>:</p>
+<div class="Bd Pp Li">
+<pre>laptop$ cd; rsync -av --delete -e ssh desktop:~/swirlbuild .</pre>
+</div>
+<p class="Pp">Then we deploy <code class="Nm">swirlbuild</code> as a
+    &quot;user&quot;. Note that you can totally &quot;upgrade&quot; later to
+    &quot;builder&quot; by running the script again.</p>
+<div class="Bd Pp Li">
+<pre>laptop$ cd swirlbuild &amp;&amp; ./infrastructure/bin/deploy user</pre>
+</div>
+<p class="Pp">As you have noticed, this only adds an
+    <span class="Pa">/etc/apt/sources.list.d</span> entry for your repository.
+    Now it is the same thing as the <var class="Va">desktop</var> machine:</p>
+<div class="Bd Pp Li">
+<pre>laptop$ sudo apt update; sudo apt upgrade; sudo apt install oksh; oksh</pre>
+</div>
+<p class="Pp">There are other ways indeed, like using a webserver for example,
+    but that is up to you.</p>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="CREATING_YOUR_OWN_SWIRLS"><a class="permalink" href="#CREATING_YOUR_OWN_SWIRLS">CREATING
+  YOUR OWN SWIRLS</a></h1>
+<p class="Pp">Please check out
+    <a class="Xr" href="swirlbuild.5.html">swirlbuild(5)</a>, especially
+    &quot;USUAL WORKFLOW&quot;, where I describe the creation of the
+    <span class="Pa">unmaintained-swirls/badwolf</span> swirl.</p>
+<p class="Pp">It is recommended to build a basic Debian package before starting,
+    see <a class="Lk" href="https://wiki.debian.org/Packaging/Intro">the
+    packaging intro</a>.</p>
+<p class="Pp">On top of that, all that is required is:</p>
+<ul class="Bl-bullet">
+  <li>Some &quot;POSIX&quot; basic shell scripting knowledge, by that I mean
+      <a class="Xr" href="dash.1.html">dash(1)</a> not
+      <a class="Xr" href="bash.1.html">bash(1)</a>.</li>
+  <li>
+    <p class="Pp">Basic understanding of Makefiles, but this is covered by the
+        packaging intro mentioned before.</p>
+  </li>
+  <li>
+    <p class="Pp">Previous experience at building software from source is
+        recommended.</p>
+  </li>
+</ul>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="MOTIVATIONS"><a class="permalink" href="#MOTIVATIONS">MOTIVATIONS</a></h1>
+<p class="Pp">Veracrypt :) As you probably know, Veracrypt will never be
+    included in Debian, unless there is a radical license change. There is a
+    whole story behind on how it snowballed to this project, but it is not
+    interesting in a technical document.</p>
+<p class="Pp">The other reason why I wanted this is avoiding appimages, snaps,
+    flatpaks for software not included in Debian (for various reasons).</p>
+<p class="Pp">I looked around, and did not like the other solutions. I am a
+    former OpenBSD user and wanted a small ports tree back, while keeping
+    Debian.</p>
+<p class="Pp">I have a script that rsync(1) my desktop PC home directory from my
+    laptops one, and then do the apt(1) upgrade thing. This explains why
+    <code class="Nm">swirlbuild</code> has been made this way and not meant as a
+    &quot;system&quot; package building system.</p>
+<p class="Pp">I do not expect anyone but me using it, but documenting it like I
+    would has been an amazing
+    <a class="Lk" href="https://en.wikipedia.org/wiki/Rubber_duck_debugging">rubber
+    duck</a>.</p>
+<p class="Pp"><b class="Sy"> My goal for</b> <code class="Nm">swirlbuild</code>
+    <b class="Sy"> is to be simple to use and maintain the source code.</b>
+    <b class="Sy"> This clashes with being as featureful as other build
+    systems.</b></p>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="CAVEATS"><a class="permalink" href="#CAVEATS">CAVEATS</a></h1>
+<section class="Ss">
+<h2 class="Ss" id="They_may_be_a_deal_breaker"><a class="permalink" href="#They_may_be_a_deal_breaker">They
+  may be a deal breaker</a></h2>
+<ul class="Bl-bullet">
+  <li><code class="Nm">swirlbuild</code> is a solo work, and as I am writing
+      this, I am its only user. You may use it in a way I did not planned and
+      meet a bug. Features have been heavily tested as they have been
+      implemented, but many are barely used as well.</li>
+  <li><code class="Nm">swirlbuild</code> only supports Debian unstable.
+      Supporting stable is more complicated than changing a few hardcoded values
+      here and there. Think about backports being present or not, the security
+      repository situation, and probably more things.
+    <p class="Pp">Debian Testing with pinning *may* work, but there is no
+        guarantee.</p>
+  </li>
+  <li>While C and C++ are fully supported, other programming languages may
+      require more work on your part, especially if an external module is not
+      available as a package.
+    <p class="Pp">Golang and Python are usually well supported and examples are
+        provided in <span class="Pa">unmaintained-swirls</span>. Rust status is
+        well ... you can do it, but
+        <a class="Xr" href="debcargo.1.html">debcargo(1)</a> is probably a
+        better option.</p>
+  </li>
+  <li><code class="Nm">swirlbuild</code> does not support multipackages
+      (-dev/-doc/-bin). I do not like this feature in Debian, excepted for debug
+      symbols that <code class="Nm">swirlbuild</code> provides by the way. The
+      same can be said about Suggests and Recommends. Also implementing them
+      does not play well with <code class="Nm">swirlbuild</code> &#x00B4;s goals
+      to stay simple.</li>
+  <li><code class="Nm">swirlbuild</code> uses a networked version of
+      <a class="Xr" href="pbuilder.8.html">pbuilder(8)</a>. This is intended
+      mostly for golang and rust packages, to avoid packaging too many
+      crates/modules.</li>
+  <li><code class="Nm">swirlbuild</code> features an almost fully staged build
+      process, but is split between <code class="Nm">swirlbuild</code> stages
+      and <a class="Xr" href="debhelper.1.html">debhelper(1)</a> stages.</li>
+</ul>
+</section>
+<section class="Ss">
+<h2 class="Ss" id="Multi_Architecture"><a class="permalink" href="#Multi_Architecture">Multi
+  Architecture</a></h2>
+<p class="Pp">Copying the <code class="Nm">swirlbuild</code> tree minus the
+    repository content and building software on the foreign architecture machine
+    works as expected.</p>
+<p class="Pp">Making a mixed architectures repository is discouraged and not
+    supported. <code class="Nm">swirlbuild</code> creates simple repositories
+    that are not adapted for that, and as such has no support for architecture
+    independant packages.</p>
+</section>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="BUGS"><a class="permalink" href="#BUGS">BUGS</a></h1>
+<p class="Pp">Do not get confused between bugs and misuse.
+    <code class="Nm">swirlbuild</code> has no checking mechanism, so it is easy
+    to do so.</p>
+<p class="Pp">Yet feel free to report them, including your swirl if relevant,
+    because there are.</p>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="SEE_ALSO"><a class="permalink" href="#SEE_ALSO">SEE
+  ALSO</a></h1>
+<p class="Pp"><a class="Xr" href="buildswirl.1.html">buildswirl(1)</a>, the user
+    manual.</p>
+<p class="Pp"><a class="Xr" href="swirlbuild.5.html">swirlbuild(5)</a>, the
+    reference manual to work on swirls.</p>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="CONTRIBUTING"><a class="permalink" href="#CONTRIBUTING">CONTRIBUTING</a></h1>
+<p class="Pp">I do not think there will be any contributor. But just in case...
+    For swirlbuild itself, try to respect the weird coding style. I prefer
+    <a class="Xr" href="test.1.html">test(1)</a>, over [ ], and real tabs and
+    stuff. Sorry. Try to not do lines longer than 90 characters. I will correct
+    the style if I see something I do not like, but please try to avoid wasting
+    too much of my time.</p>
+<p class="Pp">Changes in features must be documented, which may be problematic
+    because we are using OpenBSD's <a class="Xr" href="mdoc.7.html">mdoc(7)</a>
+    (package: mandoc) and not <a class="Xr" href="man.7.html">man(7)</a>. I will
+    take care of that if needed.</p>
+<p class="Pp">Adding a &quot;contrib-swirls&quot; may be a thing with a bit more
+    stricter acceptability rules than
+    <a class="Lk" href="https://github.com/void-linux/void-packages/blob/master/CONTRIBUTING.md">Void
+    Linux</a>.</p>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="LEGAL"><a class="permalink" href="#LEGAL">LEGAL</a></h1>
+<p class="Pp"><code class="Nm">swirlbuild</code> itself is licensed under the
+    zlib license. You can find a copy of it in $SWIRLBUILD/LICENSE.</p>
+<p class="Pp"><code class="Nm">swirlbuild</code> is not a Debian project, is not
+    endorsed by Debian, and must be considered as &quot;non-free&quot; as
+    defined in the
+    <a class="Lk" href="https://www.debian.org/doc/debian-policy/ch-archive#s-non-free">Debian
+    Policy</a>.</p>
+<section class="Ss">
+<h2 class="Ss" id="Representation_and_respect_of_upstream_licenses_in_swirlbuild"><a class="permalink" href="#Representation_and_respect_of_upstream_licenses_in_swirlbuild">Representation
+  and respect of upstream licenses in swirlbuild</a></h2>
+<p class="Pp">Any package built by <code class="Nm">swirlbuild</code> MUST come
+    with a copy of the source code license, located in
+    <span class="Pa">/usr/share/doc/&lt;PKGNAME&gt;/copyright</span>, as
+    detailed in <a class="Xr" href="swirlbuild.5.html">swirlbuild(5)</a>. There
+    is no exception to that. For speed reason, we do not use something like
+    <a class="Xr" href="decopy.1.html">decopy(1)</a>.</p>
+</section>
+<section class="Ss">
+<h2 class="Ss" id="To_upstream_authors_and_contributors"><a class="permalink" href="#To_upstream_authors_and_contributors">To
+  upstream authors and contributors</a></h2>
+<p class="Pp">The <code class="Nm">swirlbuild</code> project is the association
+    of individuals working on the official <code class="Nm">swirlbuild</code>
+    repository.</p>
+<p class="Pp">This section exists just to shield to a certain extent the
+    <code class="Nm">swirlbuild</code> project against regrettable situations
+    like the
+    <a class="Lk" href="https://github.com/jasperla/openbsd-wip/issues/86">openbsd-wip
+    vs Pale Moon joust</a>.</p>
+<ul class="Bl-bullet">
+  <li>If your software licensing is misrepresented in
+      <code class="Nm">swirlbuild</code>, please open an issue. Note that the
+      <code class="Nm">swirlbuild</code> project does not redistribute neither
+      ready to use packages of your software nor sources from your software by
+      itself. We only redistribute our own code and assets under the zlib
+      license to the public.
+    <br/>
+    To clarify, the <code class="Nm">swirlbuild</code> project just
+      redistributes recipes to build and operate your software on our operating
+      system.</li>
+  <li>In case you think we are violating any conditions of redistribution and/or
+      modification of your software, please open an issue explaining clearly
+      what are the issues and the steps we should proceed on to comply.</li>
+  <li>We may ask the intellectual property (IP) holder of the software to
+      intervene when special permissions are required.</li>
+  <li>If we agree to disagree on how to settle the situation, the swirl
+      corresponding to your software will be deleted.</li>
+</ul>
+</section>
+</section>
+</div>
+<table class="foot">
+  <tr>
+    <td class="foot-date">January 13, 2023</td>
+    <td class="foot-os">Debian sid</td>
+  </tr>
+</table>
+</body>
+</html>

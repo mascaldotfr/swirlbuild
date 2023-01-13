@@ -1,0 +1,11 @@
+--- emote/css.orig	2023-01-07 22:09:11.691953363 +0100
++++ emote/css.py	2023-01-07 22:09:24.440016606 +0100
+@@ -15,7 +15,7 @@
+     if config.is_snap:
+         css_provider.load_from_path(f"{config.snap_root}/static/style.css")
+     else:
+-        css_provider.load_from_path("static/style.css")
++        css_provider.load_from_path("/usr/share/emote/style.css")
+ 
+     screen = Gdk.Screen.get_default()
+     styleContext = Gtk.StyleContext()

@@ -1,0 +1,13 @@
+#!/bin/sh
+
+if test ! -d "swirls"; then
+	echo "Needs to be run from \$SWIRLBUILDIR"
+	exit 1
+fi
+
+for pkg in swirls/*/; do
+	DEBUG_RMPKG=1 ./buildswirl "${pkg}"
+	if test $? -ne 0; then
+		echo "FATAL: ${pkg} failed.."
+	fi
+done

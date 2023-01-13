@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# Directory is not checked, so we can rebuild the repository if the directory
+# is no present
+if test -z "${1}"; then
+	echo "Usage: ${0} <repository_directory>"
+	exit 1
+fi
+
+echo "===> Updating the repository metadata"
+mkdir -p "${1}"
+cd "${1}"
+apt-ftparchive packages . > Packages
+apt-ftparchive  -o "APT::FTPArchive::Release::Origin=swirlbuild" \
+		-o "APT::FTPArchive::Release::Description=swirlpkg repository" \
+		-o "APT::FTPArchive::Release::Suite=unstable" \
+		-o "APT::FTPArchive::Release::Codename=sid" \
+		release . > Release
+

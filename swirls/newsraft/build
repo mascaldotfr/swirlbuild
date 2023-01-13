@@ -1,0 +1,24 @@
+DESCRIPTION="
+feed reader with ncurses user interface
+It is greatly inspired by Newsboat and tries to be its lightweight counterpart.
+"
+
+HOMEPAGE="https://codeberg.org/grisha/newsraft"
+
+PKGNAME=newsraft
+VERSION=0.16
+REVISION=0
+
+LICENSE="doc/license.txt"
+SOURCE="${HOMEPAGE}/archive/${PKGNAME}-${VERSION}.tar.gz"
+OVERRIDE_SRCDIR="newsraft"
+
+BUILD_DEPENDS="
+	scdoc
+	libncurses-dev
+	libsqlite3-dev
+	libcurl4-openssl-dev
+	libexpat1-dev
+	libyajl-dev
+	libgumbo-dev
+"

@@ -1,0 +1,306 @@
+#!/bin/dash
+
+#############################################################################
+#            Everything below this line is seen by buildfiles and           #
+#                   can be overriden unless readonly is used.               #
+#############################################################################
+
+download() {
+	# $1 = URL, $2 => if defined, store in distfiles only
+	cd "${tmpdir}" || _xfailedbye "cd failed"
+	srcbname="$( basename "${1}" )"
+	srcfile="${distdir}/${srcbname}"
+	cksum="${swirldir}/sha512sum"
+	echo "===> Downloading ${1}"
+	if test ! -e "${srcfile}"; then
+		curl -L# "${1}" -o "${srcfile}" ||\
+			_xfailedbye "Download failed"
+	else
+		echo "===> Found a local distfile for ${1}"
+	fi
+	# Do not extract if we are just creating checksums
+	if test -z "${2}" -a -z "${dochecksum}"; then
+		echo "===> Extracting ${srcfile}"
+		bsdtar -xf "${srcfile}" || _xfailedbye "Extraction failed"
+	else
+		echo "===> Extra distfile stored at ${srcfile}"
+	fi
+}
+# other public hooks
+prebuild() { :; }
+postbuild() { :; }
+
+# Provide defaults for some buildfile shell variables
+# Some are voluntarily undocumented, they are maybe for future use.
+test -z "${MAKE_JOBS}" && MAKE_JOBS="$(nproc)"
+readonly ARCH="$(dpkg-architecture -q DEB_BUILD_ARCH)"
+readonly buildswirl_is_at="$(realpath "$(dirname "${0}")")"
+readonly buildfile="${1}/build"
+readonly swirldir="$( dirname "$( realpath "${buildfile}" )" )"
+
+cd "${buildswirl_is_at}" || _xfailedbye "cd failed"
+. "${buildfile}"
+
+readonly distdir="${buildswirl_is_at}/distfiles/${PKGNAME}-${VERSION}"
+mkdir -p "${distdir}" || _xfailedbye "Unable to store distfiles"
+
+
+#############################################################################
+#           Everything below this line is NOT seen by buildfiles            #
+#                	BUT can be seen by hooks             		    #
+#############################################################################
+
+_checkchecksum() {
+	cksum="${swirldir}/sha512sum"
+	if test -e "${cksum}"; then
+		echo "===> Computing checksum of the distfiles"
+		cd "${distdir}" || _xfailedbye "cd failed"
+		sha512sum -c "${cksum}"
+		if test $? -ne 0; then
+			echo "===> Checksum failed, will bail out."
+			# kill all the files, so the next invocation can try to
+			# download again.
+			rm -f "${distdir}"/*
+			echo "===> Deleted distfiles in ${distdir}, please try again."
+			_xfailedbye "FATAL: Checksum failed"
+		fi
+	else
+		echo "===> No checksum to compute, no sha512sum file found"
+	fi
+}
+
+
+_checksumandquit() {
+	echo "===> Creating sha512sum file"
+	if test ! -d "${distdir}"; then
+		echo "Cannot do any checksum: ${distdir} does not exist. It is"
+		echo "normal if you have no SOURCE or EXTRA_SOURCES in your"
+		echo "buildfile."
+		exit 1
+	fi
+	cd "${distdir}" || exit 1
+	sha512sum --tag -- * > "${swirldir}/sha512sum"
+	if test $? -ne 0; then
+		echo "===> Computing the checksums failed. Bailing out"
+		exit 1
+	fi
+	echo "===> Finished. Result:"
+	cat "${swirldir}/sha512sum"
+	exit
+}
+
+_formatdepends() {
+	# make debian/control compatible depend lines
+	echo "${1}" | awk '
+		! $1 { next } # empty line
+		{
+			# trim() :)
+			gsub(/(^[[:space:]]+|[[:space:]]+$)/, "")
+			printf(" %s,\n", $0)
+		}
+	'
+}
+
+_formatdescription() {
+	echo "${DESCRIPTION}" | awk '
+		{ gsub(/(^[[:space:]]+|[[:space:]]+$)/, "") }
+		# empty line and we are not in the long description
+		! $1 && output == "" { next }
+		# empty line, but this the long description, put dot
+		! $1 && output != "" { output = sprintf("%s\n .", output); next }
+		# real first line => short description
+		output == "" { output = $0; next }
+		# long description
+		output != "" { output = sprintf("%s\n %s", output, $0) }
+		END { print output }
+	'
+}
+
+_flatten4for() {
+	# transform a multiline string to something that for can iterate on
+	# the first item of each line
+	echo "${1}" | awk '
+		! $1 { next } # empty line
+		{ print $1 }
+	'
+}
+
+_changecontrol() {
+	awk 	-v BD="$( _formatdepends "${BUILD_DEPENDS}" )" \
+		-v RD="$( _formatdepends "${RUN_DEPENDS}" )" \
+		-v C="$( _formatdepends "${CONFLICTS}" )" \
+		-v H="${HOMEPAGE}" \
+		-v D="$( _formatdescription "${DESCRIPTION}" )"\
+		-v GIP="${GO_IMPORT_PATH}" \
+		'
+		/^ <Insert long description, indented with spaces.>/ { next }
+	       	/^Build-Depends:/ && BD != "" { printf("%s\n%s\n", $0, BD); next }
+	       	/^Depends:/ && RD != "" { printf("%s\n%s\n", $0, RD); next }
+		/^Homepage:/ && GIP != "" { printf("XS-Go-Import-Path: %s\n", GIP) }
+	       	/^Homepage:/ && H != "" { printf("Homepage: %s\n", H); next }
+		/^Description:/ && D != "" { printf("Description: %s\n", D); next }
+	       	{ print }
+		END {
+			if (C != "")
+				printf("Conflicts: %s\n", C)
+		}' "${srcdir}/debian/control"
+}
+
+_xfailedbye() {
+	echo "FATAL: $*!"
+	_clean
+	exit 1
+}
+
+_dhmake() {
+	cd "${srcdir}" || _xfailedbye "cd failed"
+	# ditch upstream debianization
+	if test -e "./debian"; then
+		echo "===> Moving upstream debian directory to debian.upstream"
+		mv debian debian.upstream
+	fi
+	echo "===> Running dh_make"
+	test -e "${swirldir}/debian" && debiantemplate=-t"${swirldir}/debian"
+	dh_make \
+		-yns ${debiantemplate} \
+		-p "${PKGNAME}_${VERSION}" || _xfailedbye "dh_make failed"
+}
+
+_applycopyright() {
+	echo "===> Applying LICENSE to debian/copyright"
+	test -z "${LICENSE}" && _xfailedbye "The LICENSE file(s) must be specified"
+	# Display an empty line between license files
+	printf "Source downloaded from ${SOURCE} or from local files\n\n" \
+		> "${srcdir}"/debian/copyright
+	tail -n+1 $( echo "${LICENSE}" | xargs ) >>  "${srcdir}"/debian/copyright
+	test $? -ne 0 && _xfailedbye "The mandatory LICENSE file(s) cannot be found"
+}
+
+_createsourcepkg() {
+	echo "===> Creating source package"
+	cd "${srcdir}" || _xfailedbye "cd failed"
+	dpkg-source --build . || \
+		_xfailedbye "Error during source package creation. Check your swirl"
+}
+
+_pbuilder() {
+	cd "${tmpdir}" || _xfailedbye "cd failed"
+	mkdir -p "${buildswirl_is_at}"/logs || _xfailedbye "mkdir failed"
+	echo "===> Launching pbuilder, need root!"
+	sudo pbuilder update
+	debline="deb [trusted=yes] file:${repodir} ./"
+	sudo pbuilder build --override-config \
+		--hookdir "${buildswirl_is_at}/infrastructure/pbuilder/hooks" \
+		--distribution sid \
+		--bindmounts "${buildswirl_is_at}" \
+		--othermirror "${debline}" \
+		--debbuildopts "-j${MAKE_JOBS} --build=binary" \
+		--logfile "${buildswirl_is_at}/logs/${PKGNAME}_${VERSION}_${ARCH}.log" \
+	 	--use-network yes \
+		./*.dsc
+	test $? -ne 0 && _xfailedbye "Building failed"
+}
+
+_clean() {
+	#echo "===> Cleaning pbuilder results, need root!"
+	#sudo rm -f "/var/cache/pbuilder/result/"*
+	echo "===> Cleaning the temporary source directory"
+	rm -rf "${tmpdir}" || exit 1
+}
+
+_torepo() {
+	echo "===> Moving package(s) to the repository"
+	mkdir -p "${repodir}"
+	# Avoid getcwd() warning after _clean
+	cd "${repodir}" || _xfailedbye "cd failed"
+	cp "/var/cache/pbuilder/result/${PKGNAME}_${VERSION}_${ARCH}.deb" "${repodir}"
+	# dbgsym packages are not always built
+	cp "/var/cache/pbuilder/result/${PKGNAME}-dbgsym_${VERSION}_${ARCH}.deb" \
+	   "${repodir}" 2> /dev/null
+	_clean
+	"${buildswirl_is_at}"/infrastructure/bin/repoupdate "${repodir}"
+	echo "Finished. Don't forget to 'apt update' before trying to install!"
+}
+
+_debugsource() {
+	echo "Here is your source debug shell."
+	echo "You can use the SWIRLDIR shell variable to refer to the swirl"
+	echo "directory."
+	echo "Note that leaving the shell will destroy the source directory."
+	cd "${tmpdir}"
+	env SWIRLDIR="${swirldir}" "${SHELL}"
+	rm -rf "${tmpdir}"
+	env -u SWIRLDIR > /dev/null
+	exit 1
+}
+
+_applypatches() {
+	echo "===> Patching"
+	patchdir="${swirldir}/patches"
+	test ! -d "${patchdir}" && return
+	cd "${srcdir}" || _xfailedbye "cd failed"
+	for patch in "${patchdir}"/*.patch; do
+		# empty or patches-disabled patches/ directory
+		test -e "${patch}" || continue
+		patch -b -Ep0 < "${patch}"
+		if test $? -ne 0; then
+			echo "ALERT: Patching Failed, activating DEBUG_SOURCE=1"
+			_debugsource
+		fi
+	done
+}
+
+if test ! -d "${1}"; then
+	echo "Usage: buildswirl <directory> [checksum]"
+	exit 1
+fi
+
+if test "${2}" = "checksum"; then
+	readonly dochecksum=Yes
+	if test -e "${swirldir}/sha512sum"; then
+		echo "FATAL: sha512sum file already existing! Please remove it first."
+		exit 1
+	fi
+fi
+
+# Don't create stuff we do not need, we just want checksums
+if test -z "${dochecksum}"; then
+	readonly repodir="${buildswirl_is_at}/repository"
+	readonly localversion="${VERSION}+swirl${REVISION}"
+	if test -e "${repodir}/${PKGNAME}_${localversion}_${ARCH}.deb"; then
+		echo "Package '${PKGNAME}-${localversion}' already built!"
+		test -z "${DEBUG_RMPKG}" && exit 1
+	fi
+
+	readonly tmpdir="$( mktemp -d )"
+	if test -z "${tmpdir}"; then
+		echo "FATAL: unable to create the temporary root source directory"
+		exit 1
+	fi
+
+	if test -z "${OVERRIDE_SRCDIR}"; then
+		readonly srcdir="${tmpdir}/${PKGNAME}-${VERSION}"
+	else
+		readonly srcdir="${tmpdir}/${OVERRIDE_SRCDIR}"
+	fi
+fi
+
+download "${SOURCE}"
+for extrasrc in $( _flatten4for "${EXTRA_SOURCES}" ); do
+	download "${extrasrc}" extra
+done
+test ! -z "${dochecksum}" && _checksumandquit
+test ! -z "${SOURCE}" && _checkchecksum
+VERSION="${localversion}"
+_dhmake
+echo "$( _changecontrol )" > "${srcdir}/debian/control"
+echo "===> Generated this control file:"
+cat  "${srcdir}/debian/control"
+_applypatches
+prebuild
+_applycopyright
+_createsourcepkg
+test ! -z "${DEBUG_SOURCE}" && _debugsource
+_pbuilder
+_torepo
+postbuild

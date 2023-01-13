@@ -1,0 +1,60 @@
+#!/bin/sh
+
+case "${1}" in
+	user|builder) ;;
+	*)
+		echo "Usage: ${0} user|builder"
+		echo
+		echo "user		just install the repository"
+		echo "builder		if you want to build packages"
+		exit 1
+esac
+
+buildswirl_is_at="$(realpath "$(dirname "${0}")"/../../)"
+repository_is_at="${buildswirl_is_at}"/repository
+debline="deb [trusted=yes] file:${repository_is_at} ./"
+
+echo
+echo "Let's deploy the swirlbuild infrastructure..."
+echo
+
+echo "===> Checking if you're not root"
+test $(id -u) -eq 0 && {
+	echo "Please run me as your normal user."
+	exit 1
+}
+echo "===> Checking if sudo is working"
+sudo printf "" || {
+	echo "Please install sudo and add yourself to the sudo group, as root:"
+	echo
+	echo "apt-get install sudo; adduser your_username sudo"
+	echo
+	echo "You'll need to log off and log on after that."
+	exit 1
+}
+echo
+echo "Looks Good!"
+echo
+
+if test "${1}" = "builder"; then
+	echo "===> Installing all the bloat^W tools needed"
+	sudo apt update
+	sudo apt install dh-make curl dpkg-dev pbuilder apt-utils patch \
+			 diffutils libarchive-tools
+
+	echo "===> Creating the pbuilder chroot"
+	sudo pbuilder create
+
+	echo "===> Updating the repository informations"
+	"${buildswirl_is_at}"/infrastructure/bin/repoupdate "${repository_is_at}"
+fi
+
+echo "===> Adding the repository to /etc/apt/sources.list.d"
+echo "${debline}" | sudo tee /etc/apt/sources.list.d/swirlpkg.list > /dev/null
+
+
+echo "===> Finished!"
+echo
+cat <<EOF
+'apt update' may issue some innocuous warning.
+EOF

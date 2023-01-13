@@ -1,0 +1,22 @@
+DESCRIPTION="minimalist and privacy-oriented WebKitGTK+ browser"
+HOMEPAGE="https://hacktivis.me/projects/badwolf"
+
+PKGNAME=badwolf
+VERSION=1.2.2
+REVISION=1
+
+LICENSE="COPYING"
+SOURCE="https://hacktivis.me/releases/${PKGNAME}-${VERSION}.tar.gz"
+
+BUILD_DEPENDS="
+	mandoc
+	pkgconf
+	gettext-base
+	libxml2-dev
+	libglib2.0-dev
+	libwebkit2gtk-4.1-dev
+"
+
+RUN_DEPENDS="
+	desktop-file-utils
+"

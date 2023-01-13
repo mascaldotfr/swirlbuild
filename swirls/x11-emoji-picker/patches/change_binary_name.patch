@@ -1,0 +1,12 @@
+--- CMakeLists.txt.orig	2023-01-07 17:55:50.345926956 +0100
++++ CMakeLists.txt	2023-01-07 18:03:27.505183400 +0100
+@@ -61,7 +61,9 @@
+ 
+ add_executable(${PROJECT_NAME} ${SRC_FILES})
+ 
++# set x11-emoji-picker as binary name, otherwise it uses emoji-picker
+ set_target_properties(${PROJECT_NAME} PROPERTIES
++  OUTPUT_NAME x11-emoji-picker
+   CXX_STANDARD 14
+   CXX_STANDARD_REQUIRED ON
+   CXX_EXTENSIONS OFF

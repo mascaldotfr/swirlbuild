@@ -1,0 +1,14 @@
+#!/usr/bin/make -f
+
+export DH_VERBOSE = 1
+export PREFIX = /usr
+export WITH_WEBKITGTK = 4.1
+export WITH_URI_PARSER = guri
+
+%:
+	dh $@
+
+# Don't call make without configure or it fails
+override_dh_auto_clean:
+	:
+

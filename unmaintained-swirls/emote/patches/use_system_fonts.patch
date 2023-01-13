@@ -1,0 +1,12 @@
+--- emote/__init__.orig	2023-01-07 21:57:13.556178614 +0100
++++ emote/__init__.py	2023-01-07 21:58:15.304528107 +0100
+@@ -12,7 +12,8 @@
+ if config.is_snap:
+     manimpango.register_font(f"{config.snap_root}/static/NotoColorEmoji.ttf")
+ else:
+-    manimpango.register_font("static/NotoColorEmoji.ttf")
++    # Use system font instead
++    manimpango.register_font("/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf")
+ 
+ settings = Gtk.Settings.get_default()
+ 

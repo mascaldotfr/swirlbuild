@@ -1,0 +1,37 @@
+# XXX Good doc at https://wiki.debian.org/Python/LibraryStyleGuide
+
+DESCRIPTION="Emoji Picker for X11
+ Emote is an emoji picker than should be run when starting your session.
+ .
+ You can activate it by pressing Ctrl+Alt+E."
+
+HOMEPAGE="https://github.com/tom-james-watson/Emote"
+
+PKGNAME=emote
+VERSION=3.0.3
+REVISION=2
+
+LICENSE="LICENSE.md"
+SOURCE="${HOMEPAGE}/archive/refs/tags/v${VERSION}.tar.gz"
+OVERRIDE_SRCDIR="Emote-${VERSION}"
+
+
+BUILD_DEPENDS="
+	dh-python
+	python3-all
+	python3-setuptools
+"
+
+# Let the Debian build system deal with python deps, but emote needs
+# a bit more than it can guess
+RUN_DEPENDS="
+	\${python3:Depends}
+	libkeybinder-3.0-0
+	gir1.2-keybinder-3.0
+	fonts-noto-color-emoji
+"
+
+prebuild() {
+	# Use system fonts instead of provided ones
+	rm "${srcdir}"/static/*.ttf
+}

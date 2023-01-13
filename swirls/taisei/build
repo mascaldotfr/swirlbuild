@@ -1,0 +1,37 @@
+# Use "./man" to get a manual describing this file.
+# Or browse infrastructure/docs/html/swirlbuild.5.html
+
+DESCRIPTION="
+free and open-source Touhou Project fangame (vendored)
+
+Taisei Project is an open source fan-game set in the world
+of Tōhō Project. It is a top-down vertical-scrolling curtain
+fire shooting game (STG), also known as a \"bullet hell\" or
+\"danmaku.\"
+"
+
+HOMEPAGE="https://taisei-project.org/"
+
+PKGNAME=taisei
+VERSION=1.3.2
+REVISION=0
+
+LICENSE="COPYING"
+SOURCE="https://github.com/taisei-project/${PKGNAME}/releases/download/v${VERSION}/${PKGNAME}-v${VERSION}.tar.xz"
+OVERRIDE_SRCDIR="${PKGNAME}-v${VERSION}"
+
+BUILD_DEPENDS="
+	meson
+	python3-docutils
+	libfreetype-dev
+	libpng-dev
+	libsdl2-dev
+	libwebp-dev
+	zlib1g-dev
+	libzstd-dev
+	libzip-dev
+	libcglm-dev
+	libssl-dev
+	libsdl2-mixer-dev
+	libopusfile-dev
+"

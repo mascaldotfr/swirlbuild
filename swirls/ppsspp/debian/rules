@@ -1,0 +1,21 @@
+#!/usr/bin/make -f
+
+export DH_VERBOSE = 1
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	dh_auto_configure -- \
+		-DUSING_EGL=OFF			\
+		-DUSE_FFMPEG=NO			\
+		-DUNITTEST=NO			\
+		-DUSE_SYSTEM_SNAPPY=YES 	\
+		-DUSE_SYSTEM_FFMPEG=YES		\
+		-DUSE_SYSTEM_LIBZIP=YES		\
+		-DUSE_SYSTEM_LIBSDL2=YES	\
+		-DUSE_SYSTEM_LIBPNG=YES		\
+		-DUSE_SYSTEM_MINIUPNPC=YES
+
+override_dh_auto_test:
+	:

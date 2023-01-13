@@ -1,0 +1,10 @@
+#!/usr/bin/make -f
+
+export DH_VERBOSE = 1
+export PREFIX = /usr
+
+%:
+	dh $@ --builddirectory=_build --buildsystem=golang --with=golang
+
+override_dh_dwz:
+	:

@@ -1,0 +1,28 @@
+#!/usr/bin/make -f
+
+# This file should be chmoded 0755
+
+export DH_VERBOSE = 1
+
+%:
+	dh $@
+
+# override_dh_auto_configure:
+	# recommended, unless upstream provides a "rules" file
+	#dh_auto_configure -- \
+	#	configure_flags [...]
+	# You can also call the configure mechanism directly, example with
+	# cmake:
+	# cmake . 	-DCMAKE_INSTALL_PREFIX=/usr/ \
+	#		-DFOO=BAR
+
+# override_dh_auto_build:
+	# recommended
+	#dh_auto_build -- \
+	#	make_flags [...]
+	# To follow the earlier cmake example:
+	# cmake --build .
+
+# Open a debug shell in the source directory when dh_auto_install is run
+# override_dh_auto_install:
+#	exit 1

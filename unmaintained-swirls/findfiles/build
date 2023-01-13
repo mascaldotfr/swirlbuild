@@ -1,0 +1,20 @@
+DESCRIPTION="find files recursively"
+HOMEPAGE="https://github.com/vishaltelangre/ff"
+
+PKGNAME=findfiles
+VERSION=0.1.8
+REVISION=0
+
+LICENSE="LICENSE-MIT UNLICENSE"
+SOURCE="${HOMEPAGE}/archive/refs/tags/v${VERSION}.tar.gz"
+OVERRIDE_SRCDIR="ff-${VERSION}"
+
+# ca-certificates is needed to download other crates
+BUILD_DEPENDS="
+	cargo
+	ca-certificates
+"
+
+prebuild() {
+	cp "${swirldir}"/files/Makefile "${srcdir}"
+}

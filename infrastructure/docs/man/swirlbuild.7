@@ -1,0 +1,489 @@
+.Dd $Mdocdate$
+.Dt swirlbuild 7
+.Os Debian sid
+.Sh NAME
+.Nm swirlbuild
+.Nd rudimentary (UNOFFICIAL) package build system for Debian Sid
+.
+.
+.Sh DESCRIPTION
+.
+.
+.Pp
+.Em "" (If you read this in a browser, this is an HTML version of
+.Nm
+.Em "" 's
+.Em "" intro manpage. Links to system manual pages will not work).
+.
+.
+.Pp
+.Nm
+is a thin layer between
+.Xr dh_make 1 ,
+.Xr pbuilder 8
+and
+.Xr apt-ftparchive 1
+to allow creating and building minimally viable Debian packages, without the
+usual paperwork and directory dance that comes with the official method. It
+also maintains a local (file:///) repository to install packages easily. Only
+Debian Sid (unstable) is supported.
+.Pp
+.Nm
+totally integrates itself inside the Debian packages management system, and
+does not need a bootstrap, just some Debian packages installed and the
+swirlbuild tree.
+.
+.Pp
+It is heavily influenced by OpenBSD's ports collection, while some hints were
+taken from Alpine's Abuild and CRUX's ports.
+.
+.Pp
+The heavy lifting is done by:
+.Bl -tag -width package
+.
+.It Xr dh_make 1
+creates all the necessary paperwork needed to reduce ours.
+.
+.It Xr pbuilder 8
+build packages in a chroot; when building with
+.Nm ,
+no development packages will be installed on your system.
+.
+.It Xr you 4
+While
+.Nm
+simplifies a lot the creation of Debian packages, you will still have to do
+some work. If you do not feel confortable with that, you may have a look at
+.Lk https://github.com/jordansissel/fpm the effing package management (fpm)
+, that is easier but less flexible out of the box.
+.
+.El
+.
+.Pp
+See
+.Sx MOTIVATIONS
+on why I ended up creating this, and
+.Sx CAVEATS
+because it is a rudimentary system, and may not fit your use case.
+.
+.
+.Ss SWIRL ?
+.
+.
+.Pp
+SWIRL means \fBS\fRoft\fBW\fRare \fBI\fRn Ou\fBR\fR \fBL\fRAN. An obvious
+reference to Debian's swirl logo and
+.Nm
+\'s
+.Sx MOTIVATIONS .
+.Nm
+is not a Debian-backed software, and is totally unofficial.
+.Pp
+Because "ports" means something else in
+.Lk https://www.debian.org/ports/index.en.html Debian's jargon
+than the usual BSD meaning of "ports", the recipe to build a package is called
+a
+.Sy "" swirl .
+.
+.
+.Sh QUICKSTART
+.
+.
+.Pp
+.Nm
+needs
+.Xr sudo 8
+and your current user must be able to use it to be root at least for running
+.Xr pbuilder 8
+For more informations see
+.Lk https://wiki.debian.org/sudo the Debian wiki documentation about this .
+.
+.Ss Deployment
+.Pp
+You usually do this once by machine.
+.Pp
+Assuming you have downloaded
+.Nm
+in your home directory:
+.
+.Bd -literal
+$ cd swirlbuild
+$ ./infrastructure/bin/deploy builder
+.Ed
+.Pp
+There you will be asked to validate the installation of some packages, sadly it
+is always too many but it is not our fault ;) An empty repository will be
+created in
+.Pa ~/swirlbuild/repository
+and an entry in
+.Pa /etc/apt/sources.list.d
+will be added for it. Also a
+.Xr pbuilder 8
+base chroot will be created.
+.Ed
+.
+.Ss Building your first swirl
+.
+.Pp
+First thing first: you should ALWAYS ensure that your system is up to date
+before running
+.Xr buildswirl 1 .
+.Pp
+We will start with
+.Pa swirls/oksh
+because it is simple; it is the OpenBSD version of the Korn Shell. Do not move
+from your ~/swirlbuild directory and run this:
+.Bd -literal
+$ sudo apt update
+.Ed
+.Pp
+If you have a recently installed Debian Sid,
+.Xr apt 8
+will complain about permissions. It is because Debian made a change to
+$HOME permissions for newly created users. See
+.Lk https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1014901 Debian bug report 1014901 .
+.Pp
+You can ignore the warning,
+.Xr chmod 1
+0755 your $HOME, and many more options. Let's
+continue to the installation and the test of that oksh swirl:
+.Bd -literal
+$ sudo apt upgrade
+$ ./buildswirl swirls/oksh
+.Ed
+.
+.Pp
+You will be met by a wall of text. Your password may be asked by
+.Xr sudo 8
+for
+.Xr pbuilder 8
+use. Grab a coffee/tea and/or feel yourself like a hacker.
+.Pp
+Hopefully the build has ended.
+.Nm
+never installs packages by itself.
+.Bd -literal
+$ sudo apt install oksh
+$ oksh
+oksh> echo $OKSH_VERSION
+7.2
+oksh> exit
+$ sudo apt remove oksh
+.Ed
+.
+.Pp
+The documentation for
+.Xr buildswirl 1 ,
+and the whole
+.Nm
+system can be installed on your system just like this:
+.Bd -literal
+$ cd ${HOME}/swirlbuild && ./buildswirl swirls/swirlbuild-docs
+.Ed
+.Pp
+HTML versions of the manpages are also available in
+.Pa /usr/share/doc/swirlbuild-docs/html .
+.Pp
+Through the documentation, you may see references to
+.Pa $SWIRLBUILD ,
+which has to be replaced by where you have put the
+.Nm
+tree on your computer.
+.
+.
+.Sh USING THE REPOSITORY ON OTHER MACHINES
+.
+.
+.Pp
+There are many ways to deploy
+.Nm
+across the network. We will take something you have already probably experienced for that:
+.Xr rsync 1
+coupled with
+.Xr ssh 1 .
+.Pp
+Let's say we have a
+.Va desktop
+machine, where you have built some packages, and you want them to be installed
+on the
+.Va laptop
+machine.
+.Pp
+This is implied that the two machines have the same architecture, see
+.Sx Multi Architecture
+about why. First we will copy swirlbuild from
+.Va desktop
+to
+.Va laptop :
+.
+.Bd -literal
+laptop$ cd; rsync -av --delete -e ssh desktop:~/swirlbuild .
+.Ed
+.Pp
+Then we deploy
+.Nm
+as a "user". Note that you can totally "upgrade" later to "builder" by running
+the script again.
+.
+.Bd -literal
+laptop$ cd swirlbuild && ./infrastructure/bin/deploy user
+.Ed
+.
+.Pp
+As you have noticed, this only adds an
+.Pa /etc/apt/sources.list.d
+entry for your repository. Now it is the same thing as the
+.Va desktop
+machine:
+.
+.Bd -literal
+laptop$ sudo apt update; sudo apt upgrade; sudo apt install oksh; oksh
+.Ed
+.
+.Pp
+There are other ways indeed, like using a webserver for example, but that is up to you.
+.
+.
+.Sh CREATING YOUR OWN SWIRLS
+.
+.
+Please check out
+.Xr swirlbuild 5 ,
+especially "USUAL WORKFLOW", where I describe the creation of the
+.Pa unmaintained-swirls/badwolf
+swirl.
+.Pp
+It is recommended to build a basic Debian package before starting, see
+.Lk https://wiki.debian.org/Packaging/Intro the packaging intro .
+.Pp
+On top of that, all that is required is:
+.Bl -bullet
+.
+.It
+Some "POSIX" basic shell scripting knowledge, by that I mean
+.Xr dash 1
+not
+.Xr bash 1 .
+.It
+.Pp
+Basic understanding of Makefiles, but this is covered by the packaging intro
+mentioned before.
+.It
+.Pp
+Previous experience at building software from source is recommended.
+.
+.El
+.
+.
+.Sh MOTIVATIONS
+.
+.
+.Pp
+Veracrypt :) As you probably know, Veracrypt will never be included in Debian,
+unless there is a radical license change. There is a whole story behind on how
+it snowballed to this project, but it is not interesting in a technical
+document.
+.Pp
+The other reason why I wanted this is avoiding appimages, snaps, flatpaks for
+software not included in Debian (for various reasons).
+.Pp
+I looked around, and did not like the other solutions. I am a former OpenBSD
+user and wanted a small ports tree back, while keeping Debian.
+.Pp
+I have a script that rsync(1) my desktop PC home directory from my laptops
+one, and then do the apt(1) upgrade thing. This explains why
+.Nm
+has been made this way and not meant as a "system" package building system.
+.Pp
+I do not expect anyone but me using it, but documenting it like I would has
+been an amazing
+.Lk https://en.wikipedia.org/wiki/Rubber_duck_debugging rubber duck .
+.Pp
+.Sy "" My goal for
+.Nm
+.Sy "" is to be simple to use and maintain the source code.
+.Sy "" This clashes with being as featureful as other build systems.
+.
+.
+.Sh CAVEATS
+.
+.
+.Ss They may be a deal breaker
+.
+.
+.Bl -bullet
+.
+.It
+.Nm
+is a solo work, and as I am writing this, I am its only user. You may use it in
+a way I did not planned and meet a bug. Features have been heavily tested as
+they have been implemented, but many are barely used as well.
+.It
+.Nm
+only supports Debian unstable. Supporting stable is more complicated than
+changing a few hardcoded values here and there. Think about backports being
+present or not, the security repository situation, and probably more things.
+.Pp
+Debian Testing with pinning *may* work, but there is no guarantee.
+.It
+While C and C++ are fully supported, other programming languages may require
+more work on your part, especially if an external module is not available as a
+package.
+.Pp
+Golang and Python are usually well supported and examples are provided
+in
+.Pa unmaintained-swirls .
+Rust status is well ... you can do it, but
+.Xr debcargo 1
+is probably a better option.
+.It
+.Nm
+does not support multipackages (-dev/-doc/-bin). I do not like this feature
+in Debian, excepted for debug symbols that
+.Nm
+provides by the way. The same can be said about Suggests and Recommends. Also
+implementing them does not play well with
+.Nm
+\'s
+goals to stay simple.
+.It
+.Nm
+uses a networked version of
+.Xr pbuilder 8 .
+This is intended mostly for golang and rust packages, to avoid packaging too
+many crates/modules.
+.It
+.Nm
+features an almost fully staged build process, but is split between
+.Nm
+stages
+and
+.Xr debhelper 1
+stages.
+.El
+.
+.
+.Ss Multi Architecture
+.
+.Pp
+Copying the
+.Nm
+tree minus the repository content and building software on the foreign
+architecture machine works as expected.
+.
+.Pp
+Making a mixed architectures repository is discouraged and not supported.
+.Nm
+creates simple repositories that are not adapted for that, and as such has no
+support for architecture independant packages.
+.
+.
+.Sh BUGS
+.Pp
+Do not get confused between bugs and misuse.
+.Nm
+has no checking mechanism, so it is easy to do so.
+.Pp
+Yet feel free to report them, including your swirl if relevant,
+because there are.
+.
+.
+.Sh SEE ALSO
+.Pp
+.Xr buildswirl 1 ,
+the user manual.
+.Pp
+.Xr swirlbuild 5 ,
+the reference manual to work on swirls.
+.
+.
+.Sh CONTRIBUTING
+.Pp
+I do not think there will be any contributor. But just in case...
+For swirlbuild itself, try to respect the weird coding style. I prefer
+.Xr test 1 ,
+over [ ], and real tabs and stuff. Sorry. Try to not do lines longer than 90
+characters. I will correct the style if I see something I do not like, but
+please try to avoid wasting too much of my time.
+.Pp
+Changes in features must be documented, which may be problematic because we are using
+OpenBSD's
+.Xr mdoc 7
+(package: mandoc) and not
+.Xr man 7 .
+I will take care of that if needed.
+.Pp
+Adding a "contrib-swirls" may be a thing with a bit more stricter acceptability rules than
+.Lk https://github.com/void-linux/void-packages/blob/master/CONTRIBUTING.md Void Linux .
+.
+.
+.Sh LEGAL
+.
+.
+.Nm
+itself is licensed under the zlib license. You can find a copy of it in
+$SWIRLBUILD/LICENSE.
+.
+.
+.Pp
+.Nm
+is not a Debian project, is not endorsed by Debian, and must be
+considered as "non-free" as defined in the
+.Lk https://www.debian.org/doc/debian-policy/ch-archive#s-non-free \
+Debian Policy .
+.
+.
+.Ss Representation and respect of upstream licenses in swirlbuild
+.
+.
+.Pp
+Any package built by
+.Nm
+MUST come with a copy of the source code license, located in
+.Pa /usr/share/doc/<PKGNAME>/copyright ,
+as detailed in
+.Xr swirlbuild 5 .
+There is no exception to that. For speed reason, we do not use something like
+.Xr decopy 1 .
+.
+.
+.Ss To upstream authors and contributors
+.
+.
+The
+.Nm
+project is the association of individuals working on the official
+.Nm
+repository.
+.
+.
+.Pp
+This section exists just to shield to a certain extent the
+.Nm
+project against regrettable situations like the
+.Lk https://github.com/jasperla/openbsd-wip/issues/86 openbsd-wip vs Pale Moon joust .
+.
+.Bl -bullet
+.It
+If your software licensing is misrepresented in
+.Nm ,
+please open an issue. Note that the
+.Nm
+project does not redistribute neither ready to use packages of your software
+nor sources from your software by itself. We only redistribute our own code and
+assets under the zlib license to the public.
+.br
+To clarify, the
+.Nm
+project just redistributes recipes to build and operate your software on our
+operating system.
+.It
+In case you think we are violating any conditions of redistribution and/or
+modification of your software, please open an issue explaining clearly what are
+the issues and the steps we should proceed on to comply.
+.It
+We may ask the intellectual property (IP) holder of the software to intervene
+when special permissions are required.
+.It
+If we agree to disagree on how to settle the situation, the swirl corresponding
+to your software will be deleted.

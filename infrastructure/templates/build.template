@@ -1,0 +1,66 @@
+# Use "./man" to get a manual describing this file.
+# Or browse infrastructure/docs/html/swirlbuild.5.html
+
+DESCRIPTION="
+CupofCoffee brings cafeine
+That package avoids you to get sleepy.
+
+This should not be used much at night.
+"
+
+HOMEPAGE="https://cupofcoffee.example.org"
+
+PKGNAME=cupofcoffee
+# GO_IMPORT_PATH="github.com/.../..."
+VERSION=1.0.0
+REVISION=0
+# CONFLICTS="
+# 	cupoftea
+# 	calabashofmate
+# "
+
+LICENSE="COPYING LICENSE License.md LEGAL"
+SOURCE="${HOMEPAGE}/downloads/${PKGNAME}-${VERSION}.tar.gz"
+# OVERRIDE_SRCDIR="${PKGNAME}-${PKGNAME}_${VERSION}"
+
+
+# EXTRA_SOURCES="
+# https://
+# https://
+# "
+
+# Why MAKE_JOBS is used?
+# MAKE_JOBS=1
+
+# SWIRL_DEPENDS=	# keep that line commented
+# ./buildswirl swirls/coffee
+# ./buildswirl swirls/water
+# ./buildswirl swirls/cup
+
+# BUILD_DEPENDS="
+#	coffeewater
+#	coffeemachine (>= 1.0+dfsg3-1)
+#	power
+#"
+#
+# RUN_DEPENDS="
+# 	cup (= 1)
+# "
+
+# download() {
+#  	target_dir="${tmpdir}/${PKGNAME}-${VERSION}"
+# 	mkdir -p "${target_dir}"
+# 	cp stuff "${target_dir}"
+# }
+
+# prebuild() {
+# 	cd "${srcdir}"
+# 	# do some stuff ...
+# }
+
+# postbuild() {
+# 	echo "Some message displayed after the build for users?"
+# }
+
+# DEBUG_SOURCE=1
+# DEBUG_RMPKG=1

@@ -1,0 +1,11 @@
+--- emote/emojis.orig	2023-01-07 22:14:30.617516463 +0100
++++ emote/emojis.py	2023-01-07 22:15:04.001678274 +0100
+@@ -239,7 +239,7 @@
+     filename = (
+         f"{config.snap_root}/static/emojis.csv"
+         if config.is_snap
+-        else "static/emojis.csv"
++        else "/usr/share/emote/emojis.csv"
+     )
+ 
+     with open(filename, newline="") as csvfile:

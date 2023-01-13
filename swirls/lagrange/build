@@ -1,0 +1,25 @@
+DESCRIPTION="
+Gemini Protocol Browser
+For improved portability, SSE4.1 is deactivated
+"
+
+HOMEPAGE="https://github.com/skyjake/lagrange"
+
+PKGNAME=lagrange
+VERSION=1.14.2
+REVISION=1
+
+LICENSE="LICENSE.md"
+SOURCE="${HOMEPAGE}/releases/download/v${VERSION}/${PKGNAME}-${VERSION}.tar.gz"
+
+BUILD_DEPENDS="
+	libsdl2-dev (>=2.0.4)
+	libssl-dev (>=1.1.1)
+	libpcre3-dev (>=8.38)
+	zlib1g-dev
+	libunistring-dev
+	libmpg123-dev
+	zip
+	libharfbuzz-dev
+	libfribidi-dev
+"

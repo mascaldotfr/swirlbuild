@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="style.css" type="text/css" media="all"/>
+  <title>swirlbuild(5)</title>
+</head>
+<body>
+<table class="head">
+  <tr>
+    <td class="head-ltitle">swirlbuild(5)</td>
+    <td class="head-vol">File Formats Manual</td>
+    <td class="head-rtitle">swirlbuild(5)</td>
+  </tr>
+</table>
+<div class="manual-text">
+<section class="Sh">
+<h1 class="Sh" id="NAME"><a class="permalink" href="#NAME">NAME</a></h1>
+<p class="Pp"><code class="Nm">swirlbuild</code> &#x2014; <span class="Nd">the
+    swirlbuild packager manual</span></p>
+</section>
+<h1 class="Sh">TABLE OF CONTENTS</h1>
+<ul class="Bl-compact">
+  <li><a href="#DESCRIPTION">DESCRIPTION</a></li>
+  <li><a href="#BUILDFILES">BUILDFILES</a>
+    <ul class="Bl-compact">
+      <li><a href="#BUILDFILES_SHELL_VARIABLES">BUILDFILES SHELL
+        VARIABLES</a></li>
+      <li><a href="#BUILDFILES_HOOKS">BUILDFILES HOOKS</a></li>
+      <li><a href="#BUILDFILES_DEBUG_VARIABLES">BUILDFILES DEBUG
+        VARIABLES</a></li>
+    </ul>
+  </li>
+  <li><a href="#THE_DEBIAN_SUBDIRECTORY">THE DEBIAN SUBDIRECTORY</a>
+    <ul class="Bl-compact">
+      <li><a href="#Providing_a_license_in_the_package_is_mandatory">Providing a
+          license in the package is mandatory</a></li>
+    </ul>
+  </li>
+  <li><a href="#THE_FILES_SUBDIRECTORY">THE FILES SUBDIRECTORY</a></li>
+  <li><a href="#THE_PATCHES_SUBDIRECTORY">THE PATCHES SUBDIRECTORY</a></li>
+  <li><a href="#THE_SHA512SUM_FILE">THE SHA512SUM FILE</a></li>
+  <li><a href="#FILES">FILES</a></li>
+  <li><a href="#ENVIRONMENT">ENVIRONMENT</a></li>
+  <li><a href="#SEE_ALSO">SEE ALSO</a></li>
+  <li><a href="#PBUILDER">PBUILDER</a>
+    <ul class="Bl-compact">
+      <li><a href="#The_pbuilder(8)_debug/fail_shell">The pbuilder(8) debug/fail
+          shell</a></li>
+    </ul>
+  </li>
+  <li><a href="#USUAL_WORKFLOW">USUAL WORKFLOW</a></li>
+</ul>
+<section class="Sh">
+<h1 class="Sh" id="DESCRIPTION"><a class="permalink" href="#DESCRIPTION">DESCRIPTION</a></h1>
+<p class="Pp">This manual includes all informations to create and maintain a
+    swirl, as well as details about <code class="Nm">swirlbuild</code>. It tries
+    to be exhaustive, but cannot replace practice and analysis of already
+    existing swirls.</p>
+<p class="Pp">Looking at <span class="Pa">swirls/oksh</span> is a good point to
+    get started. <a class="Sx" href="#USUAL_WORKFLOW">USUAL WORKFLOW</a>
+    describes a typical workflow when creating a swirl, with a real-life
+    example.</p>
+<p class="Pp">If you want to build a swirl as a simple user, please read
+    <a class="Xr" href="buildswirl.1.html">buildswirl(1)</a>.</p>
+<p class="Pp">The general idea of <code class="Nm">swirlbuild</code> is to give
+    you a lot of freedom to turn around its limitations. It will not stop you
+    from doing stupid things, not many checks are done.</p>
+<p class="Pp"><var class="Va">$SWIRLBUILD</var> is used in this documentation to
+    represent the root directory of <code class="Nm">swirlbuild</code>, where
+    the <a class="Xr" href="buildswirl.1.html">buildswirl(1)</a> script can be
+    found.</p>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="BUILDFILES"><a class="permalink" href="#BUILDFILES">BUILDFILES</a></h1>
+<p class="Pp">Buildfiles, known as
+    <span class="Pa">swirls/&lt;swirlname&gt;/build</span> are simple shell
+    scripts sourced by <code class="Nm">swirlbuild</code>. As such, standard
+    shell conventions apply when it comes to quoting, and all our usual shell
+    utilities can be used inside of it.
+    <a class="Xr" href="dash.1.html">dash(1)</a> as
+    <span class="Pa">/bin/sh</span> is implied. Note that using utilities out of
+    the Debian base utilities and packages pulled during the deployment of
+    <code class="Nm">swirlbuild</code> should be avoided, and otherwise
+    safeguards should be added to tell the user to install said utilities.</p>
+<p class="Pp">It's recommended to use the same ordering used in
+    <span class="Pa">$SWIRLBUILD/build.template</span>.</p>
+<section class="Ss">
+<h2 class="Ss" id="BUILDFILES_SHELL_VARIABLES"><a class="permalink" href="#BUILDFILES_SHELL_VARIABLES">BUILDFILES
+  SHELL VARIABLES</a></h2>
+<p class="Pp">Presented in alphabetical order.</p>
+<dl class="Bl-tag">
+  <dt id="ARCH"><a class="permalink" href="#ARCH"><code class="Ev">ARCH</code></a></dt>
+  <dd>
+    <p class="Pp">(readonly) The current architecture
+        <code class="Nm">swirlbuild</code> is being run on, according to
+        <a class="Xr" href="dpkg-architecture.1.html">dpkg-architecture(1)</a>.
+        You can use it in your buildfile if you need particular things for a
+        given architecture.</p>
+  </dd>
+  <dt id="BUILD_DEPENDS"><a class="permalink" href="#BUILD_DEPENDS"><code class="Ev">BUILD_DEPENDS</code></a></dt>
+  <dd>
+    <p class="Pp">(facultative) The build and test dependencies. This is a
+        multiline shell string, with one dependency per line. Blank lines are
+        ignored. The versioning scheme is described in
+        <a class="Xr" href="deb-src-control.5.html">deb-src-control(5)</a>, and
+        a full example can be found in
+        <span class="Pa">infrastructure/templates/build.template</span>.</p>
+    <p class="Pp">Note that <a class="Xr" href="dh_make.1.html">dh_make(1)</a>
+        tends to add the configure/build system as a BUILD_DEPENDS out of the
+        box. There is no <code class="Ev">TEST_DEPENDS</code> in
+        <code class="Nm">swirlbuild</code>, you must specify them in
+        BUILD_DEPENDS.</p>
+    <p class="Pp">If your swirl depends on another swirl, see
+        <a class="Sx" href="#SWIRL_DEPENDS">SWIRL_DEPENDS</a>.</p>
+  </dd>
+  <dt id="CONFLICTS"><a class="permalink" href="#CONFLICTS"><code class="Ev">CONFLICTS</code></a></dt>
+  <dd>
+    <p class="Pp">(facultative) If your swirl conflicts with an official Debian
+        package, put the Debian package here and it will be added as a conflict.
+        It is here for convenience but should be used as a last resort. See
+        <a class="Sx" href="#BUILD_DEPENDS">BUILD_DEPENDS</a> about the format
+        used.</p>
+  </dd>
+  <dt id="DESCRIPTION~2"><a class="permalink" href="#DESCRIPTION~2"><code class="Ev">DESCRIPTION</code></a></dt>
+  <dd>
+    <p class="Pp">(mandatory) A description for your package. This string should
+        be 1 line long at least, but can span on several lines. The first
+        non-empty line will be the description that will appear in
+        <code class="Ic">dpkg</code> <code class="Fl">-l</code>. It should not
+        be longer than 60 characters.</p>
+    <p class="Pp">(facultative) The following lines are the long description
+        that are shown when using <code class="Ic">apt</code>
+        <code class="Cm">show &lt;PKGNAME&gt;</code>. When in doubt, look at
+        <span class="Pa">infrastructure/templates/build.template</span>.</p>
+  </dd>
+  <dt id="EXTRA_SOURCES"><a class="permalink" href="#EXTRA_SOURCES"><code class="Ev">EXTRA_SOURCES</code></a></dt>
+  <dd>
+    <p class="Pp">(facultative) a list of extra sources to download. This is a
+        multiline shell string, with one URL per line. Blank lines are ignored.
+        An example of that can be found in
+        <span class="Pa">infrastructure/templates/build.template</span>.</p>
+    <p class="Pp">They are not extracted, just downloaded by
+        <a class="Xr" href="curl.1.html">curl(1)</a> in
+        <span class="Pa">$SWIRLDIR/distfiles/{PKGNAME}-{VERSION}</span> and
+        eventually checked against a checksum as described in
+        <a class="Sx" href="#THE_SHA512SUM_FILE">THE SHA512SUM FILE</a>. You can
+        work with them later thanks to a
+        <a class="Sx" href="#prebuild">prebuild</a> hook. See also
+        <a class="Sx" href="#SOURCE">SOURCE</a>, and comments in the
+        <a class="Sx" href="#download">download</a> hook if these extra sources
+        cannot be extracted by <a class="Xr" href="bsdtar.1.html">bsdtar(1)</a>,
+        which should be used as the default extractor.</p>
+  </dd>
+  <dt id="GO_IMPORT_PATH"><a class="permalink" href="#GO_IMPORT_PATH"><code class="Ev">GO_IMPORT_PATH</code></a></dt>
+  <dd>
+    <p class="Pp">(mandatory for golang modules) The import path of the go
+        module. This must match the &quot;module&quot; line that can you find in
+        the source's <span class="Pa">go.mod</span>. See
+        <span class="Pa">unmaintained-swirls/golang-helloworld</span> for an
+        example.</p>
+  </dd>
+  <dt id="HOMEPAGE"><a class="permalink" href="#HOMEPAGE"><code class="Ev">HOMEPAGE</code></a></dt>
+  <dd>
+    <p class="Pp">(mandatory) The upstream www homepage. If there is none, leave
+        this empty, but not undefined.</p>
+  </dd>
+  <dt id="LICENSE"><a class="permalink" href="#LICENSE"><code class="Ev">LICENSE</code></a></dt>
+  <dd>
+    <p class="Pp">(mandatory) The license file(s) that can be found in upstream
+        tarball. These are relative to the root of the sources or absolute,
+        separated by space(s). If files have spaces or special characters, you
+        should quote them. They are concatenated with one blank line between
+        each others in <span class="Pa">debian/copyright</span>. If the files
+        mentioned in LICENSE are non-existant
+        <a class="Xr" href="buildswirl.1.html">buildswirl(1)</a> will immediatly
+        exit with a failure. There are more informations about this in
+        <a class="Sx" href="#Providing_a_license_in_the_package_is_mandatory">Providing
+        a license in the package is mandatory</a>.</p>
+    <p class="Pp"></p>
+  </dd>
+  <dt id="MAKE_JOBS"><a class="permalink" href="#MAKE_JOBS"><code class="Ev">MAKE_JOBS</code></a></dt>
+  <dd>
+    <p class="Pp">(facultative) By default, <code class="Nm">swirlbuild</code>
+        will use a number of build jobs that is equal to the
+        <a class="Xr" href="nproc.1.html">nproc(1)</a> output. Sometimes this is
+        not adequate, for example if the software you are building does not
+        support parallel processing or takes too much memory. MAKE_JOBS defines
+        the number of parallel jobs during different steps of the build. By
+        convention, if some software needs 4GB of RAM or more by job
+        consistently put <var class="Va">MAKE_JOBS=1</var>.</p>
+    <p class="Pp">Adding a comment about why MAKE_JOBS is used is considered
+        good practice.</p>
+  </dd>
+  <dt id="OVERRIDE_SRCDIR"><a class="permalink" href="#OVERRIDE_SRCDIR"><code class="Ev">OVERRIDE_SRCDIR</code></a></dt>
+  <dd>
+    <p class="Pp">(facultative) The extracted
+        <a class="Sx" href="#SOURCE">SOURCE</a> tarball directory is supposed to
+        be in the <var class="Va">{PKGNAME}-{VERSION}</var> format. If it is not
+        (github for example), you can override the source directory by defining
+        that variable.</p>
+  </dd>
+  <dt id="PKGNAME"><a class="permalink" href="#PKGNAME"><code class="Ev">PKGNAME</code></a></dt>
+  <dd>
+    <p class="Pp">The generated Debian package name. It is discouraged to clash
+        your package name with Debian, if needed add a suffix, for example vim
+        -&gt; vim-swirl. Most often you want to use the official tools for
+        customising an official package, using
+        <code class="Nm">swirlbuild</code> for that is discouraged.
+        <a class="Lk" href="https://wiki.debian.org/BuildingTutorial">The Debian
+        wiki has a tutorial for this</a>.</p>
+  </dd>
+  <dt id="REVISION"><a class="permalink" href="#REVISION"><code class="Ev">REVISION</code></a></dt>
+  <dd>
+    <p class="Pp">(mandatory) There are swirl revisions, not Debian ones. They
+        start at 0, and should be incremented if you need to modify a package
+        without changing <a class="Sx" href="#VERSION">VERSION</a>. If
+        <a class="Sx" href="#VERSION">VERSION</a> is changed,
+        <a class="Sx" href="#REVISION">REVISION</a> should be brought back to
+      0.</p>
+    <p class="Pp">Debian revisions are not supported because
+        <code class="Nm">swirlbuild</code> &#x00B4;s simplicity is leading us to
+        not use the 3.0/quilt format but the native one, and we should not mess
+        with Debian proper mechanics. For more informations about Debian package
+        formats, see
+      <a class="Xr" href="dpkg-source.1.html">dpkg-source(1)</a>.</p>
+  </dd>
+  <dt id="RUN_DEPENDS"><a class="permalink" href="#RUN_DEPENDS"><code class="Ev">RUN_DEPENDS</code></a></dt>
+  <dd>
+    <p class="Pp">(facultative) Runtime dependencies, in the same format and
+        restrictions than <a class="Sx" href="#BUILD_DEPENDS">BUILD_DEPENDS</a>.
+        There is no <code class="Ev">LIB_DEPENDS</code> in
+        <code class="Nm">swirlbuild</code>, there are generated during the
+        Debian package creation if binaries are produced AND libraries linked.
+        If not, like <a class="Xr" href="dh_python.1.html">dh_python(1)</a>
+        managed builds, library dependencies should be mentioned in
+      RUN_DEPENDS.</p>
+    <p class="Pp">If your swirl depends on another swirl, see
+        <a class="Sx" href="#SWIRL_DEPENDS">SWIRL_DEPENDS</a>.</p>
+  </dd>
+  <dt id="SOURCE"><a class="permalink" href="#SOURCE"><code class="Ev">SOURCE</code></a></dt>
+  <dd>
+    <p class="Pp">(facultative) The source tarball download location. It
+        supports all protocols supported by
+        <a class="Xr" href="curl.1.html">curl(1)</a>, and it will be extracted
+        by <a class="Xr" href="bsdtar.1.html">bsdtar(1)</a> that supports
+        <a class="Lk" href="https://www.freebsd.org/cgi/man.cgi?query=libarchive-formats&amp;sektion=5&amp;n=1">the
+        following archive formats</a> (or use &quot;apt show&quot; on your
+        version of libarchiveNN).</p>
+    <p class="Pp">Only one source is allowed by
+        <a class="Xr" href="dh_make.1.html">dh_make(1)</a>. If you need more
+        files to download, see
+        <a class="Sx" href="#EXTRA_SOURCES">EXTRA_SOURCES</a>.
+        <a class="Sx" href="#OVERRIDE_SRCDIR">OVERRIDE_SRCDIR</a> explains the
+        expected directory format of the extracted archive and how to cope when
+        it is not compliant.</p>
+    <p class="Pp">SOURCE can be checked against a SHA512 checksum, see
+        <a class="Sx" href="#THE_SHA512SUM_FILE">THE SHA512SUM FILE</a>.</p>
+  </dd>
+  <dt id="SWIRL_DEPENDS"><a class="permalink" href="#SWIRL_DEPENDS"><code class="Ev">SWIRL_DEPENDS</code></a></dt>
+  <dd>
+    <p class="Pp">(virtual) Does not exist really. Unused for now. If your swirl
+        depends on other swirls, just call <span class="Pa">./buildswirl</span>,
+        with dependencies by order of precedence. Note that you still need to
+        mention said depends packages name in
+        <a class="Sx" href="#BUILD_DEPENDS">BUILD_DEPENDS</a> and
+        <a class="Sx" href="#RUN_DEPENDS">RUN_DEPENDS</a>. For an example of
+        this, see
+        <span class="Pa">infrastructure/templates/build.template</span>.</p>
+  </dd>
+  <dt id="VERSION"><a class="permalink" href="#VERSION"><code class="Ev">VERSION</code></a></dt>
+  <dd>
+    <p class="Pp">(mandatory) The upstream version of the package. Note that
+        EPOCH is not supported yet, so be very careful about your numbering. The
+        local package version will be:
+        <var class="Va">{VERSION}+swirl{REVISION}</var>.</p>
+    <p class="Pp">Debian versioning scheme is explained at
+        <a class="Xr" href="deb-version.7.html">deb-version(7)</a>. You can
+        compare versions with the <a class="Xr" href="dpkg.1.html">dpkg(1)</a>
+        <var class="Fa">--compare-versions</var> flag.</p>
+  </dd>
+</dl>
+</section>
+<section class="Ss">
+<h2 class="Ss" id="BUILDFILES_HOOKS"><a class="permalink" href="#BUILDFILES_HOOKS">BUILDFILES
+  HOOKS</a></h2>
+<p class="Pp">Hooks are a fairly advanced topic, and should be used only as a
+    last resort, unless you just want to package some local files.</p>
+<p class="Pp">They are simple shell functions that can be used for various
+    intents. You could override internal (starting with an underscore)
+    functions, but this is a recipe for disaster. Internal variables not
+    detailed here should not be used as well.</p>
+<p class="Pp">The following shell variables from
+    <a class="Xr" href="buildswirl.1.html">buildswirl(1)</a> can be used in your
+    hooks:</p>
+<dl class="Bl-tag">
+  <dt id="$tmpdir"><var class="Va">$tmpdir</var></dt>
+  <dd>
+    <p class="Pp">The temporary directory where the upstream source and the
+        generated <a class="Xr" href="dh_make.1.html">dh_make(1)</a> files are
+        present.</p>
+  </dd>
+  <dt id="$srcdir"><var class="Va">$srcdir</var></dt>
+  <dd>
+    <p class="Pp">The directory where the upstream source is. The
+        <span class="Pa">debian/</span> directory is a subdirectory of it, see
+        also <a class="Sx" href="#THE_DEBIAN_SUBDIRECTORY">THE DEBIAN
+        SUBDIRECTORY</a> .</p>
+  </dd>
+  <dt id="$swirldir"><var class="Va">$swirldir</var></dt>
+  <dd>
+    <p class="Pp">The directory where the current buildfile being used is
+        located.</p>
+  </dd>
+  <dt id="$distdir"><var class="Va">$distdir</var></dt>
+  <dd>
+    <p class="Pp">The directory where the files downloaded by
+        <a class="Sx" href="#SOURCE">SOURCE</a> and
+        <a class="Sx" href="#EXTRA_SOURCES">EXTRA_SOURCES</a> can be found.
+        Useful in a <a class="Sx" href="#prebuild">prebuild</a> hook.</p>
+  </dd>
+</dl>
+<p class="Pp">Here are the available hooks:</p>
+<dl class="Bl-tag">
+  <dt id="download"><a class="permalink" href="#download"><code class="Fn">download</code></a>()</dt>
+  <dd>
+    <p class="Pp">Avoid using it for publicly distributed swirls, because we
+        cannot get any checksum.</p>
+    <p class="Pp">Substitute the usual source download and extraction by your
+        own. This can be useful to create a package from local files, or use
+        alternative download methods. At this stage,
+        <var class="Va">$swirldir,</var> <var class="Va">$distdir</var> and
+        <var class="Va">$tmpdir</var> are defined, but not
+        <var class="Va">$srcdir</var>.</p>
+    <p class="Pp">Everything is up to you, but the good practice is to create
+        the <span class="Pa">${tmpdir}/${PKGNAME}-${VERSION}</span> directory
+        and put files into it. Downloads should be made with
+        <a class="Xr" href="curl.1.html">curl(1)</a>. If you need a
+        &quot;fetcher&quot; other than
+        <a class="Xr" href="curl.1.html">curl(1)</a>, you will need to put a
+        safeguard asking the user to install &quot;fetcher&quot; on their build
+        machine. Same for the extractor used. A simple example of this hook can
+        be found in
+        <span class="Pa">$SWIRLBUILD/unmaintained-swirls/justsomefiles/build</span>.</p>
+  </dd>
+  <dt id="prebuild"><a class="permalink" href="#prebuild"><code class="Fn">prebuild</code></a>()</dt>
+  <dd>
+    <p class="Pp">Run some custom actions before the source package build. This
+        is useful to inject files from your buildfile's
+        <span class="Pa">files/</span> directory, notably a Makefile.</p>
+    <p class="Pp">This is also where you can work on your
+        <a class="Sx" href="#EXTRA_SOURCES">EXTRA_SOURCES</a> files that are
+        placed in <var class="Va">${distdir}</var>.</p>
+    <p class="Pp">Example of this hook can be found in
+        <span class="Pa">unmaintained-swirls/findfiles</span>.</p>
+  </dd>
+  <dt id="postbuild"><a class="permalink" href="#postbuild"><code class="Fn">postbuild</code></a>()</dt>
+  <dd>
+    <p class="Pp">Run a custom action after the package build and repository
+        update. Unused, but it is meant to be used to display some message to
+        users after the build if needed.</p>
+  </dd>
+</dl>
+</section>
+<section class="Ss">
+<h2 class="Ss" id="BUILDFILES_DEBUG_VARIABLES"><a class="permalink" href="#BUILDFILES_DEBUG_VARIABLES">BUILDFILES
+  DEBUG VARIABLES</a></h2>
+<p class="Pp">There are meant to be used not only when you create a swirl. Final
+    users can also make use of them as environment variables. It is recommended
+    to keep them around in the build file until you have finished your work.</p>
+<p class="Pp">Here is the list of available debug variables:</p>
+<dl class="Bl-tag">
+  <dt id="DEBUG_SOURCE"><a class="permalink" href="#DEBUG_SOURCE"><code class="Ev">DEBUG_SOURCE</code></a></dt>
+  <dd>
+    <p class="Pp">If you define DEBUG_SOURCE, the build will stop before
+        building the binary package and open a shell, where you can debug issues
+        in your patches, <span class="Pa">debian/</span> files and so on. As
+        soon as the shell is exited, the temporary directory is removed. That is
+        necessary if you need to add a patch to your swirl.</p>
+    <p class="Pp">At this stage the source tarball than
+        <a class="Xr" href="pbuilder.8.html">pbuilder(8)</a> will use is already
+        generated as you can see if you enter the debug source shell. The
+        <code class="Ev">SWIRLDIR</code> environment variable is set and points
+        to the current swirl directory.</p>
+  </dd>
+  <dt id="DEBUG_RMPKG"><a class="permalink" href="#DEBUG_RMPKG"><code class="Ev">DEBUG_RMPKG</code></a></dt>
+  <dd>
+    <p class="Pp">Build a package even though it is already built. You should
+        not use it if said package version and revision has been installed
+        somewhere. It is here in case it appears that your built package has
+        some issues like misplaced files.</p>
+  </dd>
+</dl>
+</section>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="THE_DEBIAN_SUBDIRECTORY"><a class="permalink" href="#THE_DEBIAN_SUBDIRECTORY">THE
+  DEBIAN SUBDIRECTORY</a></h1>
+<p class="Pp">Actually it is lowercase. Whatever is present in this directory
+    will override what <a class="Xr" href="dh_make.1.html">dh_make(1)</a>
+  did.</p>
+<p class="Pp"><a class="Lk" href="https://www.debian.org/doc/manuals/maint-guide/index.en.html">The
+    Debian Maintainer Guide</a> contains a lot of informations about what can be
+    used to make your building process easier, simply by defining some files,
+    like adding users, services, documentations etc.</p>
+<p class="Pp">The whole <code class="Nm">swirlbuild</code> tree has many
+    examples for these files.</p>
+<p class="Pp">Try your best to use the &quot;facilities&quot; provided by this
+    directory. Using them is more future proof than injecting a Makefile through
+    <a class="Sx" href="#prebuild">prebuild</a>.</p>
+<section class="Ss">
+<h2 class="Ss" id="Providing_a_license_in_the_package_is_mandatory"><a class="permalink" href="#Providing_a_license_in_the_package_is_mandatory">Providing
+  a license in the package is mandatory</a></h2>
+<p class="Pp">It is mandatory to include the software license, and/or the end
+    user license agreement (EULA), and potentially other files required by
+    upstream into the produced package if you intend to make your swirl public,
+    and as such being used by third parties.</p>
+<p class="Pp">As mentioned in the documentation for
+    <a class="Sx" href="#LICENSE">LICENSE</a> this variable must point to valid
+    license file(s). <code class="Nm">swirlbuild</code> does not include license
+    markers to avoid misinterpretation of upstream licensing terms. Here are
+    some special cases when upstream does not provide some valid license
+    file(s). That list may grow over time.</p>
+<ul class="Bl-bullet">
+  <li>The swirl is not distributed to the public: use simply
+      <span class="Pa">/dev/null</span> in <code class="Ev">LICENSE</code>.</li>
+  <li>In any other case, ask upstream to add a LICENSE file.
+      <a class="Lk" href="https://choosealicense.com/no-permission/">This
+      rationale</a> may convince them. Until a LICENSE file is provided, the
+      swirl should stay private.</li>
+</ul>
+<p class="Pp">This matters for users, in case they inavertendly distribute
+    generated Debian packages to the general public, given that the full license
+    text and the <a class="Sx" href="#SOURCE">SOURCE</a> URL are provided in
+    <span class="Pa">/usr/share/doc/&lt;PKGNAME&gt;/copyright</span>, it
+    respects said license conditions in many, but not all, cases.</p>
+<p class="Pp">This matters for swirls creators, in case upstream's licensing
+    file layout is not clear and the license is misrepresented in your swirl,
+    then contested by upstream. Upstream got to do their homework and provide
+    either a single license file or location including all the possible licences
+    used in their software source code. Veracrypt and PPSSPP are good examples
+    of that.</p>
+<p class="Pp">See also LEGAL in
+    <a class="Xr" href="swirlbuild.7.html">swirlbuild(7)</a>.</p>
+</section>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="THE_FILES_SUBDIRECTORY"><a class="permalink" href="#THE_FILES_SUBDIRECTORY">THE
+  FILES SUBDIRECTORY</a></h1>
+<p class="Pp">This is where you can drop various files needed to the build. Note
+    that these files are not automatically added to the build. Using the
+    <a class="Sx" href="#prebuild">prebuild</a> hook is recommended to do so. A
+    good example is <span class="Pa">unmaintained-swirls/findfiles.</span></p>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="THE_PATCHES_SUBDIRECTORY"><a class="permalink" href="#THE_PATCHES_SUBDIRECTORY">THE
+  PATCHES SUBDIRECTORY</a></h1>
+<p class="Pp">This is lowercase as well.</p>
+<p class="Pp"><code class="Nm">swirlbuild</code> has a very basic patching
+    system. Every file ending with the <span class="Pa">patch</span> extension
+    in the <span class="Pa">patches</span> directory of the swirl is considered
+    a patch to be applied. Patches management is fully manual.</p>
+<p class="Pp">Patches from VCS like <a class="Xr" href="git.1.html">git(1)</a>
+    cannot be pushed as is. Creating patches for swirls is shown in
+    <a class="Sx" href="#USUAL_WORKFLOW">USUAL WORKFLOW</a>.</p>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="THE_SHA512SUM_FILE"><a class="permalink" href="#THE_SHA512SUM_FILE">THE
+  SHA512SUM FILE</a></h1>
+<p class="Pp">Lowercase as well, this file should be present if you distribute
+    your swirl. This contains the SHA512 checksum of the downloadable
+    <a class="Sx" href="#SOURCE">SOURCE</a> and
+    <a class="Sx" href="#EXTRA_SOURCES">EXTRA_SOURCES</a>.</p>
+<p class="Pp">If <a class="Sx" href="#SOURCE">SOURCE</a> is not defined, that
+    file is totally ignored.</p>
+<p class="Pp">While you can generate it manually with
+    <a class="Xr" href="sha512sum.1.html">sha512sum(1)</a>,
+    <a class="Xr" href="buildswirl.1.html">buildswirl(1)</a> includes an option
+    to generate it, and its usage is detailed there.</p>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="FILES"><a class="permalink" href="#FILES">FILES</a></h1>
+<p class="Pp">Here is the list of everything included in $SWIRLBUILD.</p>
+<dl class="Bl-tag">
+  <dt><span class="Pa">buildswirl</span></dt>
+  <dd>
+    <p class="Pp">Present in that list for exhaustivity</p>
+  </dd>
+  <dt><span class="Pa">infrastructure/</span></dt>
+  <dd>
+    <p class="Pp">Contains mostly documentations and helper scripts.</p>
+  </dd>
+  <dt><span class="Pa">infrastructure/bin/deploy</span></dt>
+  <dd>
+    <p class="Pp">This script is a small helper that installs necessary packages
+        for <code class="Nm">swirlbuild</code> operation.</p>
+  </dd>
+  <dt><span class="Pa">infrastructure/bin/masstest</span></dt>
+  <dd>
+    <p class="Pp">Build all the swirls in <span class="Pa">swirls/</span>. Used
+        for development tests, do not try this at home.</p>
+  </dd>
+  <dt><span class="Pa">infrastructure/bin/repoupdate</span></dt>
+  <dd>
+    <p class="Pp">Update your repository if some packages have been removed from
+        there. Usage is detailed in
+        <a class="Xr" href="buildswirl.1.html">buildswirl(1)</a>.</p>
+    <p class="Pp">It is also used internally by
+        <span class="Pa">buildswirl</span> to update the repository indices
+        after a successful build.</p>
+  </dd>
+  <dt><span class="Pa">infrastructure/docs/man</span></dt>
+  <dd>
+    <p class="Pp">All the manpages for <code class="Nm">swirlbuild</code>.</p>
+  </dd>
+  <dt><span class="Pa">infrastructure/docs/html</span></dt>
+  <dd>
+    <p class="Pp">All the manpages for <code class="Nm">swirlbuild</code> in
+        HTML format. They're up to date with the manpages, since i use them a
+        lot, thanks to <span class="Pa">infrastructure/docs/Makefile</span>.</p>
+  </dd>
+  <dt><span class="Pa">infrastructure/pbuilder/hooks</span></dt>
+  <dd>
+    <p class="Pp">Some <a class="Xr" href="pbuilder.8.html">pbuilder(8)</a>
+        hooks, whose names clearly indicates the intent. See its manpage for the
+        format used.</p>
+  </dd>
+  <dt><span class="Pa">infrastructure/templates/</span></dt>
+  <dd>
+    <p class="Pp">Templates that you may need when creating a swirl.</p>
+  </dd>
+  <dt><span class="Pa">logs/</span></dt>
+  <dd>
+    <p class="Pp"><code class="Nm">swirlbuild</code> generates logs for every
+        build thanks to
+      <a class="Xr" href="pbuilder.8.html">pbuilder(8)</a>.</p>
+  </dd>
+  <dt><span class="Pa">myswirls/</span></dt>
+  <dd>
+    <p class="Pp">Files included in this directory are not tracked by
+        <a class="Xr" href="git.1.html">git(1)</a>. If you want to put personal
+        swirls inside your copy of the <code class="Nm">swirlbuild</code>
+        repository, you can put them there.</p>
+  </dd>
+  <dt><span class="Pa">swirls/</span></dt>
+  <dd>
+    <p class="Pp">All the officially maintained swirls.</p>
+  </dd>
+  <dt><span class="Pa">unmaintained-swirls/</span></dt>
+  <dd>
+    <p class="Pp">These swirls are probably out-of-date, finally officially
+        packaged, or kept as examples to show x or y feature. And also probably
+        broken.</p>
+  </dd>
+  <dt><span class="Pa">unmaintained-swirls/README.md</span></dt>
+  <dd>
+    <p class="Pp">The status of every unmaintained swirls, and what they are
+        featuring that can be interesting for your own swirls.</p>
+  </dd>
+</dl>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="ENVIRONMENT"><a class="permalink" href="#ENVIRONMENT">ENVIRONMENT</a></h1>
+<p class="Pp">See also
+    <a class="Sx" href="#BUILDFILES_DEBUG_VARIABLES">BUILDFILES DEBUG
+    VARIABLES</a>.</p>
+<dl class="Bl-tag">
+  <dt id="DEBEMAIL"><a class="permalink" href="#DEBEMAIL"><code class="Ev">DEBEMAIL</code></a></dt>
+  <dd>
+    <p class="Pp">Used by <a class="Xr" href="dh_make.1.html">dh_make(1)</a> and
+        <a class="Xr" href="pbuilder.8.html">pbuilder(8)</a>. This defines the
+        maintainer email address present in the package.</p>
+  </dd>
+  <dt id="DEBFULLNAME"><a class="permalink" href="#DEBFULLNAME"><code class="Ev">DEBFULLNAME</code></a></dt>
+  <dd>
+    <p class="Pp">Used by <a class="Xr" href="dh_make.1.html">dh_make(1)</a> and
+        <a class="Xr" href="pbuilder.8.html">pbuilder(8)</a>. This defines the
+        maintainer firstname, lastname present in the package. By default, it
+        tries to fetch that from your account infos.</p>
+  </dd>
+  <dt><a class="Sx" href="#MAKE_JOBS">MAKE_JOBS</a></dt>
+  <dd>This variable can be used if it is not specified in the buildfile, and
+      will define the numbers of parallel jobs during various steps of the
+      build.</dd>
+</dl>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="SEE_ALSO"><a class="permalink" href="#SEE_ALSO">SEE
+  ALSO</a></h1>
+<p class="Pp"><a class="Xr" href="buildswirl.1.html">buildswirl(1)</a> details
+    basic informations on how to build a swirl and several maintenance tips.
+    <a class="Xr" href="swirlbuild.7.html">swirlbuild(7)</a> is an intro to
+    <code class="Nm">swirlbuild</code> and details its deployment, scope,
+    motivations and caveats.</p>
+<p class="Pp"><a class="Lk" href="https://www.debian.org/doc/manuals/maint-guide/index.en.html">The
+    Debian Maintainer Guide</a> is a good basic reference, as well as the
+    <a class="Xr" href="debhelper.7.html">debhelper(7)</a> manpage.</p>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="PBUILDER"><a class="permalink" href="#PBUILDER">PBUILDER</a></h1>
+<p class="Pp"><a class="Xr" href="pbuilder.8.html">pbuilder(8)</a> maintains its
+    own <a class="Xr" href="apt.8.html">apt(8)</a> cache.
+    <code class="Nm">swirlbuild</code> does not clean the
+    <span class="Pa">/var/cache/pbuilder/result</span> directory as well. You
+    can clean up by using:</p>
+<div class="Bd Pp Li">
+<pre>sudo pbuilder clean
+sudo rm /var/cache/pbuilder/result/*</pre>
+</div>
+<p class="Pp">By default <a class="Xr" href="pbuilder.8.html">pbuilder(8)</a>
+    cannot access to any network when starting to build a package.
+    <b class="Sy"> This is not the case in the</b>
+    <code class="Nm">swirlbuild</code> <b class="Sy"> system.</b> This avoids
+    packaging dozen of crates or go modules simply by using cargo and &quot;go
+    build&quot; in a Makefile.</p>
+<p class="Pp">The <span class="Pa">ca-certificates</span> package should added
+    as a <a class="Sx" href="#BUILD_DEPENDS">BUILD_DEPENDS</a> if you encounter
+    TLS certificate errors during the build.</p>
+<section class="Ss">
+<h2 class="Ss" id="The_pbuilder(8)_debug/fail_shell"><a class="permalink" href="#The_pbuilder(8)_debug/fail_shell">The
+  pbuilder(8) debug/fail shell</a></h2>
+<p class="Pp">If the build fails a shell will be opened in the
+    <a class="Xr" href="pbuilder.8.html">pbuilder(8)</a> chroot, and will get
+    you to the source directory of the package.
+    <a class="Xr" href="vi.1.html">vi(1)</a> will be installed. That can help
+    you see the reason for a failure. Quitting that shell will destroy the
+    chroot. It is a hook than can be found at
+    <span class="Pa">infrastructure/pbuilder/hooks/C99build_open_debug_shell</span>.</p>
+<p class="Pp">You can trigger the
+    <a class="Xr" href="pbuilder.8.html">pbuilder(8)</a> failure shell for any
+    <a class="Xr" href="dh_*.1.html">dh_*(1)</a> command, with a specially
+    crafted <span class="Pa">debian/rules</span> file, allowing you to debug the
+    build. An example can be found at
+    <span class="Pa">$SWIRLBUILD/infrastructure/templates/rules.template</span>.</p>
+</section>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="USUAL_WORKFLOW"><a class="permalink" href="#USUAL_WORKFLOW">USUAL
+  WORKFLOW</a></h1>
+<p class="Pp">I will go with a non trivial yet easy real world example that can
+    you find at <span class="Pa">$SWIRLBUILD/unmaintained-swirls/badwolf.</span>
+    This is lengthy because i wanted to showcase a lot of things
+    <code class="Nm">swirlbuild</code> can propose.</p>
+<div class="Bd Pp Li">
+<pre>
+cd your_swirlbuild_root_directory
+mkdir swirls/badwolf &amp;&amp; cd swirls/badwolf
+cp ../../infrastructure/templates/build.template build
+
+# modify the buildfile to something that looks sensible
+# and uncomment DEBUG_SOURCE=1 in the build file. While
+# here add the sha512sum file.
+
+../../buildswirl $PWD checksum
+../../buildswirl $PWD
+exit
+
+# This looked okayish out of the box. Comment DEBUG_SOURCE=1 and try the build.
+
+../../buildswirl $PWD
+
+# dh_auto_clean
+#	make -j12 distclean
+# Failed with Error: You need to execute ./configure before running make
+# I'll need to override dh_auto_clean
+
+mkdir debian
+cp ../../infrastructure/templates/rules.template debian/rules
+
+# I edit debian/rules and try again
+
+../../buildswirl $PWD
+
+# Missing dependencies, so editing the buildfile again
+
+../../buildswirl $PWD
+
+# dh_usrlocal: error: debian/badwolf/usr/local/bin/badwolf is not a directory
+# I will need to change PREFIX in debian/rules, also the configure script
+# asked for more changes, to specify some extra environment options
+
+../../buildswirl $PWD
+
+# It builds! But I have found out by inspecting the built package with
+# xarchiver that BadWolf installs its documentation where it should not. I
+# should override that destination directory with an environment variable in
+# debian/rules, but for the sake of the demonstration, I will make a patch.
+# Also I set up DEBUG_RMPKG=1 in the buildfile.
+
+env DEBUG_SOURCE=1 ../../buildswirl $PWD
+cd badwolf-1.2.2
+cp configure{,.orig}
+
+# I change the DOCDIR variable to what we need in configure,
+# then check the result:
+
+diff -u configure{.orig,}
+
+# Looks good, time to add it as a patch and exit:
+
+mkdir $SWIRLDIR/patches
+diff -u configure{.orig,} &gt; $SWIRLDIR/patches/fix_documentation_path.patch
+exit
+
+# This should be our final build!
+
+../../buildswirl $PWD
+
+# After inspection it is fine. I remove all the unnecessary comment stuff in
+# build. Time to test the runtime and have fun!
+
+sudo apt update
+sudo apt install badwolf</pre>
+</div>
+</section>
+</div>
+<table class="foot">
+  <tr>
+    <td class="foot-date">January 13, 2023</td>
+    <td class="foot-os">Debian sid</td>
+  </tr>
+</table>
+</body>
+</html>

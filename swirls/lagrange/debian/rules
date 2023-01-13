@@ -1,0 +1,14 @@
+#!/usr/bin/make -f
+export DEB_BUILD_MAINT_OPTIONS=hardening=-format
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	dh_auto_configure -- \
+		-DTFDN_ENABLE_SSE41=NO \
+		-DCMAKE_INSTALL_PREFIX=/usr/ \
+		-DENABLE_HARFBUZZ_MINIMAL=NO \
+		-DENABLE_FRIBIDI_BUILD=NO \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DENABLE_WINDOWPOS_FIX=YES

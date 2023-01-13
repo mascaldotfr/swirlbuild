@@ -1,0 +1,12 @@
+--- configure.orig	2023-01-06 04:00:30.812847445 +0100
++++ configure	2023-01-06 04:02:16.433353907 +0100
+@@ -4,7 +4,8 @@
+ PREFIX="${PREFIX:-/usr/local}"
+ BINDIR="${BINDIR:-${PREFIX}/bin}"
+ MANDIR="${MANDIR:-${PREFIX}/share/man}"
+-DOCDIR="${DOCDIR:-${PREFIX}/share/doc/badwolf-${VERSION}}"
++# Drop version for DOCDIR, comply with Debian file hierarchy
++DOCDIR="${DOCDIR:-${PREFIX}/share/doc/badwolf}"
+ DATADIR="${DATADIR:-${PREFIX}/share/badwolf}"
+ APPSDIR="${APPSDIR:-${PREFIX}/share/applications}"
+ 

@@ -1,0 +1,11 @@
+--- emote/picker.orig	2023-01-07 22:21:05.635363322 +0100
++++ emote/picker.py	2023-01-07 22:21:29.607450800 +0100
+@@ -321,7 +321,7 @@
+         logo_path = (
+             f"{config.snap_root}/static/logo.svg"
+             if config.is_snap
+-            else "static/logo.svg"
++            else "/usr/share/emote/logo.svg"
+         )
+         logo = Pixbuf.new_from_file(logo_path)
+ 
