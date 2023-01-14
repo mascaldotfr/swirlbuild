@@ -3,7 +3,7 @@ HOMEPAGE="https://gawkextlib.sourceforge.net/"
 
 PKGNAME=gawk-timex
 VERSION=1.0.0
-REVISION=0
+REVISION=1
 
 LICENSE="COPYING"
 SOURCE="https://downloads.sourceforge.net/gawkextlib/${PKGNAME}-${VERSION}.tar.gz"

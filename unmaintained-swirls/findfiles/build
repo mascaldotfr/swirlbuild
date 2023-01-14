@@ -3,7 +3,7 @@ HOMEPAGE="https://github.com/vishaltelangre/ff"
 
 PKGNAME=findfiles
 VERSION=0.1.8
-REVISION=0
+REVISION=1
 
 LICENSE="LICENSE-MIT UNLICENSE"
 SOURCE="${HOMEPAGE}/archive/refs/tags/v${VERSION}.tar.gz"
