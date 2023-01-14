@@ -2,3 +2,4 @@ distfiles/
 repository/
 logs/
 myswirls/*
+!myswirls/your_untracked_swirls_should_be_here
