@@ -35,7 +35,11 @@ postbuild() { :; }
 test -z "${MAKE_JOBS}" && MAKE_JOBS="$(nproc)"
 readonly ARCH="$(dpkg-architecture -q DEB_BUILD_ARCH)"
 readonly buildswirl_is_at="$(realpath "$(dirname "${0}")")"
-readonly buildfile="${1}/build"
+# Try hard to make the buildfile location is properly found when
+# using ../../buildswirl $PWD
+buildfile="${buildswirl_is_at}/${1}/build"
+test ! -e "${buildfile}" && buildfile="${1}/build"
+readonly buildfile
 readonly swirldir="$( dirname "$( realpath "${buildfile}" )" )"
 
 cd "${buildswirl_is_at}" || exit 1
@@ -302,6 +306,15 @@ for extrasrc in $( _flatten4for "${EXTRA_SOURCES}" ); do
 done
 test ! -z "${dochecksum}" && _checksumandquit
 test ! -z "${SOURCE}" && _checkchecksum
+for swirldep in $( _flatten4for "${SWIRL_DEPENDS}" ); do
+	echo "===> Building dependency \"${swirldep}\""
+	"${buildswirl_is_at}/buildswirl" ${swirldep}
+	if test $? -ne 0; then
+		echo "===> Building \"${swirldep}\" failed, or is already built."
+		# Cannot exit 1 on fail in case the package has already been built
+	fi
+done
+
 VERSION="${localversion}"
 _dhmake
 echo "$( _changecontrol )" > "${srcdir}/debian/control"

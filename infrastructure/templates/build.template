@@ -34,10 +34,11 @@ SOURCE="${HOMEPAGE}/downloads/${PKGNAME}-${VERSION}.tar.gz"
 # Why MAKE_JOBS is used?
 # MAKE_JOBS=1
 
-# SWIRL_DEPENDS=	# keep that line commented
-# ./buildswirl swirls/coffee
-# ./buildswirl swirls/water
-# ./buildswirl swirls/cup
+# SWIRL_DEPENDS="
+#	swirls/coffee
+# 	swirls/water
+# 	swirls/cup
+#"
 
 # BUILD_DEPENDS="
 #	coffeewater

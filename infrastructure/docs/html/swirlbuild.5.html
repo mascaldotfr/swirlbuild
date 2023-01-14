@@ -296,13 +296,13 @@
   </dd>
   <dt id="SWIRL_DEPENDS"><a class="permalink" href="#SWIRL_DEPENDS"><code class="Ev">SWIRL_DEPENDS</code></a></dt>
   <dd>
-    <p class="Pp">(virtual) Does not exist really. Unused for now. If your swirl
-        depends on other swirls, just call <span class="Pa">./buildswirl</span>,
-        with dependencies by order of precedence. Note that you still need to
-        mention said depends packages name in
-        <a class="Sx" href="#BUILD_DEPENDS">BUILD_DEPENDS</a> and
-        <a class="Sx" href="#RUN_DEPENDS">RUN_DEPENDS</a>. For an example of
-        this, see
+    <p class="Pp">(facultative) Unused for now. If your swirl depends on other
+        swirls, just add them to this variable in the format explained in
+        <a class="Sx" href="#BUILD_DEPENDS">BUILD_DEPENDS</a>, with dependencies
+        by order of precedence. Note that you still need to mention said depends
+        packages name in <a class="Sx" href="#BUILD_DEPENDS">BUILD_DEPENDS</a>
+        and <a class="Sx" href="#RUN_DEPENDS">RUN_DEPENDS</a>. The paths must be
+        relative to $SWIRLBUILD. For an example of this, see
         <span class="Pa">infrastructure/templates/build.template</span>.</p>
   </dd>
   <dt id="VERSION"><a class="permalink" href="#VERSION"><code class="Ev">VERSION</code></a></dt>

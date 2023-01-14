@@ -323,15 +323,15 @@ SOURCE can be checked against a SHA512 checksum, see
 .
 .It Ev SWIRL_DEPENDS
 .Pp
-(virtual) Does not exist really. Unused for now. If your swirl depends on other
-swirls, just call
-.Pa \&./buildswirl ,
+(facultative) Unused for now. If your swirl depends on other
+swirls, just add them to this variable in the format explained in
+.Sx BUILD_DEPENDS ,
 with dependencies by order of precedence. Note that you still need to mention said
 depends packages name in
 .Sx BUILD_DEPENDS
 and
 .Sx RUN_DEPENDS .
-For an example of this, see
+The paths must be relative to $SWIRLBUILD.  For an example of this, see
 .Pa infrastructure/templates/build.template .
 .
 .
