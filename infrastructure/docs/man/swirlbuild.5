@@ -80,6 +80,16 @@ You can use it in your buildfile if you need particular things
 for a given architecture.
 .
 .
+.It Ev BREAKS
+.Pp
+(facultative) If your swirl breaks another package(s), put the package(s) here.
+It is here for convenience but should be used as a last resort. See
+.Sx BUILD_DEPENDS
+about the format used, and
+.Xr deb-control 5
+for more informations.
+.
+.
 .It Ev BUILD_DEPENDS
 .Pp
 (facultative) The build and test dependencies. This is a multiline shell
@@ -228,6 +238,28 @@ you want to use the official tools for customising an official package, using
 .Nm
 for that is discouraged.
 .Lk https://wiki.debian.org/BuildingTutorial The Debian wiki has a tutorial for this .
+.
+.
+.It Ev PROVIDES
+.Pp
+(facultative) If your swirl provides a virtual package, put the package(s)
+here. See
+.Sx BUILD_DEPENDS
+about the format used, and
+.Xr deb-control 5
+for more informations.
+.
+.
+.It Ev REPLACES
+.Pp
+(facultative) If your swirl overwrites another package's files, put the filenames
+here. This one is supposed to be used with
+.Sx CONFLICTS .
+and should be used as a last resort. See
+.Sx BUILD_DEPENDS
+about the format used, and
+.Xr deb-control 5
+for more informations.
 .
 .
 .It Ev REVISION

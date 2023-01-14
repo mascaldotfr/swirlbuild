@@ -125,6 +125,9 @@ _changecontrol() {
 	awk 	-v BD="$( _formatdepends "${BUILD_DEPENDS}" )" \
 		-v RD="$( _formatdepends "${RUN_DEPENDS}" )" \
 		-v C="$( _formatdepends "${CONFLICTS}" )" \
+		-v BR="$( _formatdepends "${BREAKS}" )" \
+		-v REP="$( _formatdepends "${REPLACES}" )" \
+		-v PR="$( _formatdepends "${PROVIDES}" )" \
 		-v H="${HOMEPAGE}" \
 		-v D="$( _formatdescription "${DESCRIPTION}" )"\
 		-v GIP="${GO_IMPORT_PATH}" \
@@ -137,8 +140,10 @@ _changecontrol() {
 		/^Description:/ && D != "" { printf("Description: %s\n", D); next }
 	       	{ print }
 		END {
-			if (C != "")
-				printf("Conflicts: %s\n", C)
+			if (C != "") printf("Conflicts: %s\n", C)
+			if (BR != "") printf("Breaks: %s\n", BR)
+			if (REP != "") printf("Replaces: %s\n", REP)
+			if (PR != "") printf("Provides: %s\n", PR)
 		}' "${srcdir}/debian/control"
 }
 

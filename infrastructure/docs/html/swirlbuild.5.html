@@ -99,6 +99,15 @@
         You can use it in your buildfile if you need particular things for a
         given architecture.</p>
   </dd>
+  <dt id="BREAKS"><a class="permalink" href="#BREAKS"><code class="Ev">BREAKS</code></a></dt>
+  <dd>
+    <p class="Pp">(facultative) If your swirl breaks another package(s), put the
+        package(s) here. It is here for convenience but should be used as a last
+        resort. See <a class="Sx" href="#BUILD_DEPENDS">BUILD_DEPENDS</a> about
+        the format used, and
+        <a class="Xr" href="deb-control.5.html">deb-control(5)</a> for more
+        informations.</p>
+  </dd>
   <dt id="BUILD_DEPENDS"><a class="permalink" href="#BUILD_DEPENDS"><code class="Ev">BUILD_DEPENDS</code></a></dt>
   <dd>
     <p class="Pp">(facultative) The build and test dependencies. This is a
@@ -219,6 +228,24 @@
         <code class="Nm">swirlbuild</code> for that is discouraged.
         <a class="Lk" href="https://wiki.debian.org/BuildingTutorial">The Debian
         wiki has a tutorial for this</a>.</p>
+  </dd>
+  <dt id="PROVIDES"><a class="permalink" href="#PROVIDES"><code class="Ev">PROVIDES</code></a></dt>
+  <dd>
+    <p class="Pp">(facultative) If your swirl provides a virtual package, put
+        the package(s) here. See
+        <a class="Sx" href="#BUILD_DEPENDS">BUILD_DEPENDS</a> about the format
+        used, and <a class="Xr" href="deb-control.5.html">deb-control(5)</a> for
+        more informations.</p>
+  </dd>
+  <dt id="REPLACES"><a class="permalink" href="#REPLACES"><code class="Ev">REPLACES</code></a></dt>
+  <dd>
+    <p class="Pp">(facultative) If your swirl overwrites another package's
+        files, put the filenames here. This one is supposed to be used with
+        <a class="Sx" href="#CONFLICTS">CONFLICTS</a>. and should be used as a
+        last resort. See <a class="Sx" href="#BUILD_DEPENDS">BUILD_DEPENDS</a>
+        about the format used, and
+        <a class="Xr" href="deb-control.5.html">deb-control(5)</a> for more
+        informations.</p>
   </dd>
   <dt id="REVISION"><a class="permalink" href="#REVISION"><code class="Ev">REVISION</code></a></dt>
   <dd>
