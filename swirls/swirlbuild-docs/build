@@ -15,7 +15,7 @@ HOMEPAGE="https://mascaldotfr.github.io/swirlbuild"
 
 PKGNAME=swirlbuild-docs
 VERSION=4
-REVISION=0
+REVISION=1
 
 LICENSE="LICENSE"
 

@@ -3,7 +3,7 @@ HOMEPAGE="https://github.com/GaZaTu/x11-emoji-picker"
 
 PKGNAME=x11-emoji-picker
 VERSION=0.11.0
-REVISION=0
+REVISION=1
 
 LICENSE="LICENSE"
 SOURCE="${HOMEPAGE}/archive/refs/tags/v${VERSION}.tar.gz"
