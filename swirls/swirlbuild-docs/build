@@ -19,11 +19,12 @@ REVISION=0
 
 LICENSE="LICENSE"
 
+# buildswirl_is_at should not be used out of this swirl
 download() {
  	target_dir="${tmpdir}/${PKGNAME}-${VERSION}"
 	mkdir -p "${target_dir}"
-	cp -a 	"${swirldir}"/../../infrastructure/docs/man \
-		"${swirldir}"/../../infrastructure/docs/html \
-		"${swirldir}"/../../LICENSE \
+	cp -a 	"${buildswirl_is_at}"/infrastructure/docs/man \
+		"${buildswirl_is_at}"/infrastructure/docs/html \
+		"${buildswirl_is_at}"/LICENSE \
 		"${target_dir}"
 }
