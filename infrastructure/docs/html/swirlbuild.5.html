@@ -135,6 +135,15 @@
         <code class="Cm">show &lt;PKGNAME&gt;</code>. When in doubt, look at
         <span class="Pa">infrastructure/templates/build.template</span>.</p>
   </dd>
+  <dt id="EPOCH"><a class="permalink" href="#EPOCH"><code class="Ev">EPOCH</code></a></dt>
+  <dd>
+    <p class="Pp">(facultative) Epoch number of the swirl. Its value is 0 by
+        default and is implied if not added to the buildfile. If it appears that
+        the upstream versioning scheme changed and
+        <a class="Xr" href="dpkg.1.html">dpkg(1)</a> does not see the new
+        version as newer than the old version, you need to increment EPOCH by
+        one. See also <a class="Sx" href="#VERSION">VERSION</a>.</p>
+  </dd>
   <dt id="EXTRA_SOURCES"><a class="permalink" href="#EXTRA_SOURCES"><code class="Ev">EXTRA_SOURCES</code></a></dt>
   <dd>
     <p class="Pp">(facultative) a list of extra sources to download. This is a
@@ -214,11 +223,11 @@
   <dt id="REVISION"><a class="permalink" href="#REVISION"><code class="Ev">REVISION</code></a></dt>
   <dd>
     <p class="Pp">(mandatory) There are swirl revisions, not Debian ones. They
-        start at 0, and should be incremented if you need to modify a package
+        start at 1, and should be incremented if you need to modify a package
         without changing <a class="Sx" href="#VERSION">VERSION</a>. If
         <a class="Sx" href="#VERSION">VERSION</a> is changed,
         <a class="Sx" href="#REVISION">REVISION</a> should be brought back to
-      0.</p>
+      1.</p>
     <p class="Pp">Debian revisions are not supported because
         <code class="Nm">swirlbuild</code> &#x00B4;s simplicity is leading us to
         not use the 3.0/quilt format but the native one, and we should not mess
@@ -271,14 +280,17 @@
   </dd>
   <dt id="VERSION"><a class="permalink" href="#VERSION"><code class="Ev">VERSION</code></a></dt>
   <dd>
-    <p class="Pp">(mandatory) The upstream version of the package. Note that
-        EPOCH is not supported yet, so be very careful about your numbering. The
-        local package version will be:
-        <var class="Va">{VERSION}+swirl{REVISION}</var>.</p>
+    <p class="Pp">(mandatory) The upstream version of the package. The local
+        package version will be:
+        <var class="Va">[{EPOCH}:]{VERSION}+swirl{REVISION}</var>.</p>
     <p class="Pp">Debian versioning scheme is explained at
         <a class="Xr" href="deb-version.7.html">deb-version(7)</a>. You can
         compare versions with the <a class="Xr" href="dpkg.1.html">dpkg(1)</a>
-        <var class="Fa">--compare-versions</var> flag.</p>
+        <var class="Fa">--compare-versions</var> flag. If it appears that the
+        upstream versioning scheme changed and
+        <a class="Xr" href="dpkg.1.html">dpkg(1)</a> does not see the new
+        version as newer than the old version, see
+        <a class="Sx" href="#EPOCH">EPOCH</a>.</p>
   </dd>
 </dl>
 </section>
@@ -718,7 +730,7 @@ sudo apt install badwolf</pre>
 </div>
 <table class="foot">
   <tr>
-    <td class="foot-date">January 13, 2023</td>
+    <td class="foot-date">January 14, 2023</td>
     <td class="foot-os">Debian sid</td>
   </tr>
 </table>

@@ -14,7 +14,8 @@ HOMEPAGE="https://cupofcoffee.example.org"
 PKGNAME=cupofcoffee
 # GO_IMPORT_PATH="github.com/.../..."
 VERSION=1.0.0
-REVISION=0
+# EPOCH=1
+REVISION=1
 # CONFLICTS="
 # 	cupoftea
 # 	calabashofmate

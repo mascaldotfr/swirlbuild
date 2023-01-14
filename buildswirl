@@ -160,6 +160,13 @@ _dhmake() {
 	dh_make \
 		-yns ${debiantemplate} \
 		-p "${PKGNAME}_${VERSION}" || _xfailedbye "dh_make failed"
+	if test ! -z "${EPOCH}"; then
+		echo "===> Applying EPOCH to debian/control"
+		EPOCH="${EPOCH}:"
+		# XXX should use dch(1), but it pulls devscript
+		chglog="${PKGNAME} (${EPOCH}${VERSION}) UNRELEASED; urgency=medium"
+		sed -i '1s/^.*$/'"${chglog}"'/' debian/changelog
+	fi
 }
 
 _applycopyright() {

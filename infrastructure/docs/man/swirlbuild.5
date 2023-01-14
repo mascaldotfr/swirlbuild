@@ -128,6 +128,18 @@ When in doubt, look at
 .Pa infrastructure/templates/build.template .
 .
 .
+.It Ev EPOCH
+.Pp
+(facultative) Epoch number of the swirl. Its value is 0 by default and is
+implied if not added to the buildfile. If it appears that the upstream
+versioning scheme
+changed and
+.Xr dpkg 1
+does not see the new version as newer than the old version, you need to increment
+EPOCH by one. See also
+.Sx VERSION .
+.
+.
 .It Ev EXTRA_SOURCES
 .Pp
 (facultative) a list of extra sources to download. This is a multiline shell
@@ -220,14 +232,14 @@ for that is discouraged.
 .
 .It Ev REVISION
 .Pp
-(mandatory) There are swirl revisions, not Debian ones. They start at 0, and
+(mandatory) There are swirl revisions, not Debian ones. They start at 1, and
 should be incremented if you need to modify a package without changing
 .Sx VERSION .
 If
 .Sx VERSION
 is changed,
 .Sx REVISION
-should be brought back to 0.
+should be brought back to 1.
 .Pp
 Debian revisions are not supported because
 .Nm swirlbuild
@@ -293,9 +305,9 @@ For an example of this, see
 .
 .It Ev VERSION
 .Pp
-(mandatory) The upstream version of the package. Note that EPOCH is not supported yet,
-so be very careful about your numbering. The local package version will be:
-.Va {VERSION}+swirl{REVISION} .
+(mandatory) The upstream version of the package. The local package version will
+be:
+.Va [{EPOCH}:]{VERSION}+swirl{REVISION} .
 .
 .Pp
 Debian versioning scheme is explained at
@@ -303,7 +315,10 @@ Debian versioning scheme is explained at
 You can compare versions with the
 .Xr dpkg 1
 .Fa --compare-versions
-flag.
+flag. If it appears that the upstream versioning scheme changed and
+.Xr dpkg 1
+does not see the new version as newer than the old version, see
+.Sx EPOCH .
 .
 .El
 .
