@@ -81,7 +81,7 @@ _checksumandquit() {
 	cd "${distdir}" || exit 1
 	sha512sum --tag -- * > "${swirldir}/sha512sum"
 	if test $? -ne 0; then
-		echo "===> Computing the checksums failed. Bailing out"
+		echo "===> Computing the checksums failed. Bailing out."
 		exit 1
 	fi
 	echo "===> Finished. Result:"
@@ -170,7 +170,7 @@ _dhmake() {
 		-yns ${debiantemplate} \
 		-p "${PKGNAME}_${VERSION}" || _xfailedbye "dh_make failed"
 	if test ! -z "${EPOCH}"; then
-		echo "===> Applying EPOCH to debian/control"
+		echo "===> Applying EPOCH to debian/control as requested"
 		EPOCH="${EPOCH}:"
 		# XXX should use dch(1), but it pulls devscript
 		chglog="${PKGNAME} (${EPOCH}${VERSION}) UNRELEASED; urgency=medium"
@@ -214,8 +214,6 @@ _pbuilder() {
 }
 
 _clean() {
-	#echo "===> Cleaning pbuilder results, need root!"
-	#sudo rm -f "/var/cache/pbuilder/result/"*
 	echo "===> Cleaning the temporary source directory"
 	rm -rf "${tmpdir}" || exit 1
 }
@@ -318,8 +316,6 @@ done
 VERSION="${localversion}"
 _dhmake
 echo "$( _changecontrol )" > "${srcdir}/debian/control"
-echo "===> Generated this control file:"
-cat  "${srcdir}/debian/control"
 _applypatches
 prebuild
 _applycopyright
