@@ -33,14 +33,37 @@ postbuild() { :; }
 # Provide defaults for some buildfile shell variables
 # Some are voluntarily undocumented, they are maybe for future use.
 test -z "${MAKE_JOBS}" && MAKE_JOBS="$(nproc)"
-readonly ARCH="$(dpkg-architecture -q DEB_BUILD_ARCH)"
-readonly buildswirl_is_at="$(realpath "$(dirname "${0}")")"
+
+ARCH="$(dpkg-architecture -q DEB_BUILD_ARCH)"
+if test -z "${ARCH}"; then
+	echo "FATAL: unable to determine current architecture"
+	exit 1
+fi
+readonly ARCH
+
+buildswirl_is_at="$(realpath "$(dirname "${0}")")"
+if test -z "${buildswirl_is_at}"; then
+	echo "FATAL: unable to find where the swirlbuild tree is"
+	exit 1
+fi
+readonly buildswirl_is_at
+
 # Try hard to make the buildfile location is properly found when
 # using ../../buildswirl $PWD
 buildfile="${buildswirl_is_at}/${1}/build"
 test ! -e "${buildfile}" && buildfile="${1}/build"
+if test ! -e "${buildfile}"; then
+	echo "FATAL: unable to get the buildfile location"
+	exit 1
+fi
 readonly buildfile
-readonly swirldir="$( dirname "$( realpath "${buildfile}" )" )"
+
+swirldir="$( dirname "$( realpath "${buildfile}" )" )"
+if test ! -e "${swirldir}"; then
+	echo "FATAL: unable to get the swirl directory"
+	exit 1
+fi
+readonly swirldir
 
 cd "${buildswirl_is_at}" || exit 1
 . "${buildfile}"
@@ -166,6 +189,8 @@ _dhmake() {
 	fi
 	echo "===> Running dh_make"
 	test -e "${swirldir}/debian" && debiantemplate=-t"${swirldir}/debian"
+	# XXX Cannot quote $debiantemplate because it fails if no debian/
+	#     directory exist
 	dh_make \
 		-yns ${debiantemplate} \
 		-p "${PKGNAME}_${VERSION}" || _xfailedbye "dh_make failed"
@@ -182,7 +207,7 @@ _applycopyright() {
 	echo "===> Applying LICENSE to debian/copyright"
 	test -z "${LICENSE}" && _xfailedbye "The LICENSE file(s) must be specified"
 	# Display an empty line between license files
-	printf "Source downloaded from ${SOURCE} or from local files\n\n" \
+	printf "Source downloaded from %s or from local files\n\n" "${SOURCE}" \
 		> "${srcdir}"/debian/copyright
 	tail -n+1 $( echo "${LICENSE}" | xargs ) >>  "${srcdir}"/debian/copyright
 	test $? -ne 0 && _xfailedbye "The mandatory LICENSE file(s) cannot be found"
@@ -237,7 +262,7 @@ _debugsource() {
 	echo "You can use the SWIRLDIR shell variable to refer to the swirl"
 	echo "directory."
 	echo "Note that leaving the shell will destroy the source directory."
-	cd "${tmpdir}"
+	cd "${tmpdir}" || _xfailedbye "FATAL: unable to enter ${tmpdir}"
 	env SWIRLDIR="${swirldir}" "${SHELL}"
 	rm -rf "${tmpdir}"
 	env -u SWIRLDIR > /dev/null
@@ -285,11 +310,12 @@ if test -z "${dochecksum}"; then
 		test -z "${DEBUG_RMPKG}" && exit 1
 	fi
 
-	readonly tmpdir="$( mktemp -d )"
+	tmpdir="$( mktemp -d )"
 	if test -z "${tmpdir}"; then
 		echo "FATAL: unable to create the temporary root source directory"
 		exit 1
 	fi
+	readonly tmpdir
 
 	if test -z "${OVERRIDE_SRCDIR}"; then
 		readonly srcdir="${tmpdir}/${PKGNAME}-${VERSION}"
@@ -306,10 +332,10 @@ test ! -z "${dochecksum}" && _checksumandquit
 test ! -z "${SOURCE}" && _checkchecksum
 for swirldep in $( _flatten4for "${SWIRL_DEPENDS}" ); do
 	echo "===> Building dependency \"${swirldep}\""
-	"${buildswirl_is_at}/buildswirl" ${swirldep}
+	"${buildswirl_is_at}/buildswirl" "${swirldep}"
 	if test $? -ne 0; then
 		echo "===> Building \"${swirldep}\" failed, or is already built."
-		# Cannot exit 1 on fail in case the package has already been built
+		# XXX Cannot exit 1 on fail in case the package has already been built
 	fi
 done
 
