@@ -229,6 +229,7 @@ _pbuilder() {
 	sudo pbuilder build --override-config \
 		--hookdir "${buildswirl_is_at}/infrastructure/pbuilder/hooks" \
 		--distribution sid \
+		--components "main contrib non-free" \
 		--bindmounts "${buildswirl_is_at}" \
 		--othermirror "${debline}" \
 		--debbuildopts "-j${MAKE_JOBS} --build=binary" \
