@@ -47,11 +47,11 @@ If it is appended to the command line,
 .Nm
 will download all the source files necessary to build the swirl, compute their
 checksums, and then create a
-.Pa $SWIRLBUILD/<swirlname>/sha512sum
+.Pa $SWIRLBUILD/<swirlname>/checksum
 file with them, provided that it does not exist.
 .Pp
 If
-.Pa $SWIRLBUILD/<swirlname>/sha512sum
+.Pa $SWIRLBUILD/<swirlname>/checksum
 exists, it will quit immediatly.
 .Pp
 This option should not be used if you do not intend to create or maintain a

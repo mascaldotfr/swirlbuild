@@ -40,7 +40,7 @@
   </li>
   <li><a href="#THE_FILES_SUBDIRECTORY">THE FILES SUBDIRECTORY</a></li>
   <li><a href="#THE_PATCHES_SUBDIRECTORY">THE PATCHES SUBDIRECTORY</a></li>
-  <li><a href="#THE_SHA512SUM_FILE">THE SHA512SUM FILE</a></li>
+  <li><a href="#THE_CHECKSUM_FILE">THE CHECKSUM FILE</a></li>
   <li><a href="#FILES">FILES</a></li>
   <li><a href="#ENVIRONMENT">ENVIRONMENT</a></li>
   <li><a href="#SEE_ALSO">SEE ALSO</a></li>
@@ -163,7 +163,7 @@
         <a class="Xr" href="curl.1.html">curl(1)</a> in
         <span class="Pa">$SWIRLDIR/distfiles/{PKGNAME}-{VERSION}</span> and
         eventually checked against a checksum as described in
-        <a class="Sx" href="#THE_SHA512SUM_FILE">THE SHA512SUM FILE</a>. You can
+        <a class="Sx" href="#THE_CHECKSUM_FILE">THE CHECKSUM FILE</a>. You can
         work with them later thanks to a
         <a class="Sx" href="#prebuild">prebuild</a> hook. See also
         <a class="Sx" href="#SOURCE">SOURCE</a>, and comments in the
@@ -291,8 +291,8 @@
         <a class="Sx" href="#OVERRIDE_SRCDIR">OVERRIDE_SRCDIR</a> explains the
         expected directory format of the extracted archive and how to cope when
         it is not compliant.</p>
-    <p class="Pp">SOURCE can be checked against a SHA512 checksum, see
-        <a class="Sx" href="#THE_SHA512SUM_FILE">THE SHA512SUM FILE</a>.</p>
+    <p class="Pp">SOURCE can be checked against a checksum, see
+        <a class="Sx" href="#THE_CHECKSUM_FILE">THE CHECKSUM FILE</a>.</p>
   </dd>
   <dt id="SWIRL_DEPENDS"><a class="permalink" href="#SWIRL_DEPENDS"><code class="Ev">SWIRL_DEPENDS</code></a></dt>
   <dd>
@@ -505,10 +505,10 @@
     <a class="Sx" href="#USUAL_WORKFLOW">USUAL WORKFLOW</a>.</p>
 </section>
 <section class="Sh">
-<h1 class="Sh" id="THE_SHA512SUM_FILE"><a class="permalink" href="#THE_SHA512SUM_FILE">THE
-  SHA512SUM FILE</a></h1>
+<h1 class="Sh" id="THE_CHECKSUM_FILE"><a class="permalink" href="#THE_CHECKSUM_FILE">THE
+  CHECKSUM FILE</a></h1>
 <p class="Pp">Lowercase as well, this file should be present if you distribute
-    your swirl. This contains the SHA512 checksum of the downloadable
+    your swirl. This contains the checksum of the downloadable
     <a class="Sx" href="#SOURCE">SOURCE</a> and
     <a class="Sx" href="#EXTRA_SOURCES">EXTRA_SOURCES</a>.</p>
 <p class="Pp">If <a class="Sx" href="#SOURCE">SOURCE</a> is not defined, that
@@ -690,7 +690,7 @@ cp ../../infrastructure/templates/build.template build
 
 # modify the buildfile to something that looks sensible
 # and uncomment DEBUG_SOURCE=1 in the build file. While
-# here add the sha512sum file.
+# here add the checksum file.
 
 ../../buildswirl $PWD checksum
 ../../buildswirl $PWD
@@ -757,7 +757,7 @@ sudo apt install badwolf</pre>
 </div>
 <table class="foot">
   <tr>
-    <td class="foot-date">January 14, 2023</td>
+    <td class="foot-date">January 17, 2023</td>
     <td class="foot-os">Debian sid</td>
   </tr>
 </table>

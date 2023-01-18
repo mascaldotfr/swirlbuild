@@ -78,10 +78,10 @@
     <p class="Pp">If it is appended to the command line,
         <code class="Nm">buildswirl</code> will download all the source files
         necessary to build the swirl, compute their checksums, and then create a
-        <span class="Pa">$SWIRLBUILD/&lt;swirlname&gt;/sha512sum</span> file
-        with them, provided that it does not exist.</p>
+        <span class="Pa">$SWIRLBUILD/&lt;swirlname&gt;/checksum</span> file with
+        them, provided that it does not exist.</p>
     <p class="Pp">If
-        <span class="Pa">$SWIRLBUILD/&lt;swirlname&gt;/sha512sum</span> exists,
+        <span class="Pa">$SWIRLBUILD/&lt;swirlname&gt;/checksum</span> exists,
         it will quit immediatly.</p>
     <p class="Pp">This option should not be used if you do not intend to create
         or maintain a swirl.</p>
@@ -207,7 +207,7 @@ sudo rm /var/cache/pbuilder/result/*</pre>
 </div>
 <table class="foot">
   <tr>
-    <td class="foot-date">January 14, 2023</td>
+    <td class="foot-date">January 17, 2023</td>
     <td class="foot-os">Debian sid</td>
   </tr>
 </table>

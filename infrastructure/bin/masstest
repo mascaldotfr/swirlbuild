@@ -9,5 +9,6 @@ for pkg in swirls/*/; do
 	DEBUG_RMPKG=1 ./buildswirl "${pkg}"
 	if test $? -ne 0; then
 		echo "FATAL: ${pkg} failed.."
+		exit 1
 	fi
 done

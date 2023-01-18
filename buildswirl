@@ -10,7 +10,7 @@ download() {
 	cd "${tmpdir}" || _xfailedbye "cd failed"
 	srcbname="$( basename "${1}" )"
 	srcfile="${distdir}/${srcbname}"
-	cksum="${swirldir}/sha512sum"
+	cksum="${swirldir}/checksum"
 	echo "===> Downloading ${1}"
 	if test ! -e "${srcfile}"; then
 		curl -L# "${1}" -o "${srcfile}" ||\
@@ -74,7 +74,7 @@ cd "${buildswirl_is_at}" || exit 1
 #############################################################################
 
 _checkchecksum() {
-	cksum="${swirldir}/sha512sum"
+	cksum="${swirldir}/checksum"
 	if test -e "${cksum}"; then
 		echo "===> Computing checksum of the distfiles"
 		cd "${distdir}" || _xfailedbye "cd failed"
@@ -88,13 +88,13 @@ _checkchecksum() {
 			_xfailedbye "FATAL: Checksum failed"
 		fi
 	else
-		echo "===> No checksum to compute, no sha512sum file found"
+		echo "===> No checksum to compute, no checksum file found"
 	fi
 }
 
 
 _checksumandquit() {
-	echo "===> Creating sha512sum file"
+	echo "===> Creating checksum file"
 	if test ! -d "${distdir}"; then
 		echo "Cannot do any checksum: ${distdir} does not exist. It is"
 		echo "normal if you have no SOURCE or EXTRA_SOURCES in your"
@@ -102,13 +102,13 @@ _checksumandquit() {
 		exit 1
 	fi
 	cd "${distdir}" || exit 1
-	sha512sum --tag -- * > "${swirldir}/sha512sum"
+	sha512sum --tag -- * > "${swirldir}/checksum"
 	if test $? -ne 0; then
 		echo "===> Computing the checksums failed. Bailing out."
 		exit 1
 	fi
 	echo "===> Finished. Result:"
-	cat "${swirldir}/sha512sum"
+	cat "${swirldir}/checksum"
 	exit
 }
 
@@ -295,8 +295,8 @@ fi
 
 if test "${2}" = "checksum"; then
 	readonly dochecksum=Yes
-	if test -e "${swirldir}/sha512sum"; then
-		echo "FATAL: sha512sum file already existing! Please remove it first."
+	if test -e "${swirldir}/checksum"; then
+		echo "FATAL: checksum file already existing! Please remove it first."
 		exit 1
 	fi
 fi

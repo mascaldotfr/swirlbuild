@@ -162,7 +162,7 @@ They are not extracted, just downloaded by
 in
 .Pa $SWIRLDIR/distfiles/{PKGNAME}-{VERSION}
 and eventually checked against a checksum as described in
-.Sx THE SHA512SUM FILE .
+.Sx THE CHECKSUM FILE .
 You can work with them later thanks to a
 .Sx prebuild
 hook. See also
@@ -317,8 +317,8 @@ If you need more files to download, see
 explains the expected directory format of the extracted archive and how to cope
 when it is not compliant.
 .Pp
-SOURCE can be checked against a SHA512 checksum, see
-.Sx THE SHA512SUM FILE .
+SOURCE can be checked against a checksum, see
+.Sx THE CHECKSUM FILE .
 .
 .
 .It Ev SWIRL_DEPENDS
@@ -587,12 +587,12 @@ cannot be pushed as is. Creating patches for swirls is shown in
 .Sx USUAL WORKFLOW .
 .
 .
-.Sh THE SHA512SUM FILE
+.Sh THE CHECKSUM FILE
 .
 .
 .Pp
 Lowercase as well, this file should be present if you distribute your swirl. This
-contains the SHA512 checksum of the downloadable
+contains the checksum of the downloadable
 .Sx SOURCE
 and
 .Sx EXTRA_SOURCES .
@@ -812,7 +812,7 @@ cp ../../infrastructure/templates/build.template build
 
 # modify the buildfile to something that looks sensible
 # and uncomment DEBUG_SOURCE=1 in the build file. While
-# here add the sha512sum file.
+# here add the checksum file.
 
 \&../../buildswirl $PWD checksum
 \&../../buildswirl $PWD
