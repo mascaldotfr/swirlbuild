@@ -1,12 +1,13 @@
 DESCRIPTION="
 Gemini Protocol Browser
+
 For improved portability, SSE4.1 is deactivated
 "
 
 HOMEPAGE="https://gmi.skyjake.fi/lagrange/"
 
 PKGNAME=lagrange
-VERSION=1.15.1
+VERSION=1.15.2
 REVISION=1
 
 LICENSE="LICENSE.md"
