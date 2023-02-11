@@ -6,7 +6,7 @@ It is greatly inspired by Newsboat and tries to be its lightweight counterpart.
 HOMEPAGE="https://codeberg.org/grisha/newsraft"
 
 PKGNAME=newsraft
-VERSION=0.16
+VERSION=0.17
 REVISION=1
 
 LICENSE="doc/license.txt"
