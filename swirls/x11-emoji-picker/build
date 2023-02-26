@@ -2,7 +2,7 @@ DESCRIPTION="emoji picker for X11 based on the Qt library"
 HOMEPAGE="https://github.com/GaZaTu/x11-emoji-picker"
 
 PKGNAME=x11-emoji-picker
-VERSION=0.13.0
+VERSION=0.14.0
 REVISION=1
 
 LICENSE="LICENSE"
