@@ -13,7 +13,7 @@ in Debian proper so it is renamed.
 HOMEPAGE="https://maoschanz.github.io/drawing/"
 
 PKGNAME=dessin
-VERSION=1.0.1
+VERSION=1.0.2
 REVISION=1
 CONFLICTS="drawing"
 
