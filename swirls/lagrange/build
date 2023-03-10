@@ -7,7 +7,7 @@ For improved portability, SSE4.1 is deactivated
 HOMEPAGE="https://gmi.skyjake.fi/lagrange/"
 
 PKGNAME=lagrange
-VERSION=1.15.3
+VERSION=1.15.4
 REVISION=1
 
 LICENSE="LICENSE.md"
