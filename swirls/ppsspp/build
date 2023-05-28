@@ -8,8 +8,8 @@ DESCRIPTION="Sony PlayStation Portable emulator (unvendored)
 HOMEPAGE="https://www.ppsspp.org/"
 
 PKGNAME=ppsspp
-VERSION=1.14.4
-REVISION=5
+VERSION=1.15.4
+REVISION=1
 
 LICENSE="LICENSE.TXT"
 SOURCE="https://github.com/hrydgard/${PKGNAME}/releases/download/v${VERSION}/${PKGNAME}-${VERSION}.tar.xz"
