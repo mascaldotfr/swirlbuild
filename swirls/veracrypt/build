@@ -2,7 +2,7 @@ DESCRIPTION="Disk encryption with strong security based on TrueCrypt"
 HOMEPAGE="https://www.veracrypt.fr/"
 
 PKGNAME=veracrypt
-VERSION=1.25.9
+VERSION=1.26.7
 REVISION=1
 
 LICENSE="License.txt"
@@ -12,8 +12,9 @@ OVERRIDE_SRCDIR="VeraCrypt-VeraCrypt_${VERSION}"
 BUILD_DEPENDS="
 	yasm (>= 1.3.0)
 	pkgconf
-	libwxgtk3.0-gtk3-dev
 	libfuse-dev
+	libpcsclite-dev
+	libwxgtk3.2-dev
 "
 RUN_DEPENDS="
 	dmsetup
