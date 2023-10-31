@@ -10,25 +10,26 @@ fire shooting game (STG), also known as a \"bullet hell\" or
 HOMEPAGE="https://taisei-project.org/"
 
 PKGNAME=taisei
-VERSION=1.3.2
+VERSION=1.4
 REVISION=1
 
 LICENSE="COPYING"
-SOURCE="https://github.com/taisei-project/${PKGNAME}/releases/download/v${VERSION}/${PKGNAME}-v${VERSION}.tar.xz"
-OVERRIDE_SRCDIR="${PKGNAME}-v${VERSION}"
+SOURCE="https://github.com/taisei-project/${PKGNAME}/releases/download/v${VERSION}/${PKGNAME}-${VERSION}.tar.xz"
+OVERRIDE_SRCDIR="${PKGNAME}-${VERSION}"
 
 BUILD_DEPENDS="
-	meson
-	python3-docutils
 	libfreetype-dev
 	libpng-dev
 	libsdl2-dev
 	libwebp-dev
-	zlib1g-dev
 	libzstd-dev
 	libzip-dev
 	libcglm-dev
 	libssl-dev
 	libsdl2-mixer-dev
 	libopusfile-dev
+	meson
+	python3-docutils
+	python3-zstandard
+	zlib1g-dev
 "
