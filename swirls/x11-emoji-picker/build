@@ -2,7 +2,7 @@ DESCRIPTION="emoji picker for X11 based on the Qt library"
 HOMEPAGE="https://github.com/GaZaTu/x11-emoji-picker"
 
 PKGNAME=x11-emoji-picker
-VERSION=0.14.0
+VERSION=0.15.0
 REVISION=1
 
 LICENSE="LICENSE"
@@ -13,6 +13,5 @@ MAKE_JOBS=1
 
 BUILD_DEPENDS="
 	qtbase5-dev
-	libicu-dev
 	libxdo-dev
 "
