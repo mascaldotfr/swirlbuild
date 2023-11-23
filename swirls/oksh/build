@@ -2,7 +2,7 @@ DESCRIPTION="OpenBSD's version of ksh"
 HOMEPAGE="https://github.com/ibara/oksh/"
 
 PKGNAME=oksh
-VERSION=7.3
+VERSION=7.4
 REVISION=1
 
 LICENSE="LEGAL"
