@@ -14,7 +14,7 @@ HTML documentation is at file:///usr/share/doc/swirlbuild-docs/html .
 HOMEPAGE="https://mascaldotfr.github.io/swirlbuild"
 
 PKGNAME=swirlbuild-docs
-VERSION=4
+VERSION=5
 REVISION=1
 
 LICENSE="LICENSE"
