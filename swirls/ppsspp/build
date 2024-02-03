@@ -8,7 +8,7 @@ DESCRIPTION="Sony PlayStation Portable emulator (unvendored)
 HOMEPAGE="https://www.ppsspp.org/"
 
 PKGNAME=ppsspp
-VERSION=1.16.6
+VERSION=1.17
 REVISION=1
 
 LICENSE="LICENSE.TXT"
@@ -33,9 +33,9 @@ BUILD_DEPENDS="
 "
 
 RUN_DEPENDS="
-	libavformat59
-	libavutil57
+	libavformat60
+	libavutil58
 	libswresample4
-	libswscale6
+	libswscale7
 	libzstd1
 "
