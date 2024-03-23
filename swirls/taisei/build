@@ -10,7 +10,7 @@ fire shooting game (STG), also known as a \"bullet hell\" or
 HOMEPAGE="https://taisei-project.org/"
 
 PKGNAME=taisei
-VERSION=1.4
+VERSION=1.4.1
 REVISION=1
 
 LICENSE="COPYING"
